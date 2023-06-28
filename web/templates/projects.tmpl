@@ -1,0 +1,136 @@
+{{ define "projects" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+        <div class="container">
+            <div class="row">
+                <div class="col-10">
+                    <div class="list-group">
+                        {{ range .Projects }}
+                            <a href="/projects/{{ .ID }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ .Name }}</h5>
+                                </div>
+                                <p class="mb-1">{{ .Description }}</p>
+                            </a>
+                        {{ end }}
+                    </div>
+                </div>
+                <div class="col-2">
+    {{ if eq .Role "admin" }}
+                    <a class="btn btn-dark" href="/projects/create" role="button">Create Project</a>
+    {{ end }}
+                </div>
+            </div>
+        </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "create_projects" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-6">
+                <form action="/projects/create" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" name="description">
+                    </div>
+                    <button type="submit" class="btn btn-dark">Create</button>
+                </form>
+            </div>
+            <div class="col-2"></div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "project" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row" id="projectHolder">
+            <div class="col-2"></div>
+            <div class="col-6">
+                {{ $projectID:=.Project.ID}}
+                <h3>{{ .Project.Name }}</h3>
+                <p>{{ .Project.Description }}</p>
+                <hr>
+                <h5>Scripts</h5>
+                <div class="list-group">
+                    {{ if .Scripts }}
+                    {{ range .Scripts }}
+                        <a href="/projects/{{ $projectID }}/{{ .ID }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ .Name }}</h5>
+                            </div>
+                            <p class="mb-1">{{ .Description }}</p>
+                        </a>
+                    {{ end }}
+                    {{ else }}
+                        <p>No scripts found - Create one to get started</p>
+                    {{ end }}
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a href="/" class="list-group-item list-group-item-action">Back to Projects</a>
+                    <a href="/projects/{{ .Project.ID }}/create" class="list-group-item list-group-item-action">Create Script</a>
+                    <a href="/projects/{{ .Project.ID }}/secrets" class="list-group-item list-group-item-action">Secrets</a>
+                    <a href="/projects/{{ .Project.ID }}/permissions" class="list-group-item list-group-item-action">Edit Permissions</a>
+    {{ if eq .Role "admin" }}
+                    <button class="list-group-item list-group-item-action bg-danger text-white"
+                       hx-delete="/projects/{{ .Project.ID }}" hx-target="#projectHolder" hx-confirm="Are you sure you wish to delete this project?"
+                    >Delete Project</button>
+    {{ end }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "permissions" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+            </div>
+            <div class="col-4">
+                <h3>Manage Project Permissions</h3>
+                <form method="post">
+                    {{ range .Permissions }}
+                        {{ if .IsGlobalAdmin }}
+                    <label for="role" class="form-label">{{ .Email }}</label>
+                        <select class="form-select" name="{{ .UserID }}" id="{{ .UserID }}" disabled>
+                        { if .IsGlobalAdmin }}<option value="global" selected>Global Admin</option>
+                        </select>
+                        <br>
+                        {{ else }}
+                            <label for="role" class="form-label">{{ .Email }}</label>
+                            <select class="form-select" name="{{ .UserID }}" id="{{ .UserID }}">
+                                <option value="admin" {{ if .IsAdmin }}selected{{ end }}>Admin</option>
+                                <option value="user" {{ if .IsUser }}selected{{ end }}>User</option>
+                                <option value="none" {{ if .HasNoAccess }}selected{{ end }}>No Access</option>
+                        </select>
+                                <br>
+                        {{ end }}
+                    {{ end }}
+                    <button type="submit" class="btn btn-dark">Update Permissions</button>
+                </form>
+            </div>
+            <div class="col-4">
+                    <div class="list-group">
+                        <a href="/projects/{{ .Project.ID }}" class="list-group-item list-group-item-action">Back to Project</a>
+                    </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}

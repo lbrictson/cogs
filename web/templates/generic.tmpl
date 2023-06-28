@@ -1,0 +1,45 @@
+{{ define "unauthorized" }}
+    {{ template "head" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-4" style="margin-top: 10rem !important;">
+                <div class="card" style="border-width: 2px !important;">
+                    <div class="card-body">
+                        <p>
+                            You are not authorized to access this page.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <button onclick="history.back()" class="btn btn-dark">Back</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4"></div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "generic_error" }}
+    {{ template "head" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-4" style="margin-top: 10rem !important;">
+                <div class="card" style="border-width: 2px !important;">
+                    <div class="card-body">
+                        <p>
+                            {{ .Message }}
+                        </p>
+                        <div class="d-grid gap-2">
+                            <button onclick="history.back()" class="btn btn-dark">Back</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4"></div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}

@@ -1,0 +1,110 @@
+{{ define "users" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+        <div class="container">
+            <div class="row">
+                <div class="col-3"></div>
+                <div class="col-6">
+                    <form action="/users" method="get">
+                        <div class="row g-6">
+                            <div class="col-sm-8">
+                                <input type="text" name="search" id="search" class="form-control" placeholder="example@example.com" value="{{ .Search }}" autofocus>
+                            </div>
+                            <div class="col-sm-4 ms-auto">
+                                <button type="submit" class="btn btn-dark">Search</button>
+                                <a class="btn btn-dark" href="/users" role="button">Reset</a>
+                            </div>
+                        </div>
+                    </form>
+                    <br>
+                    <div class="list-group">
+                        {{ range .Users }}
+                        <a href="/users/{{ .ID }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ .Email }}</h5>
+                                <small>{{ .Role }}</small>
+                            </div>
+                            <small>Click to edit</small>
+                        </a>
+                        {{ end }}
+                </div>
+                </div>
+                <div class="col-3">
+                    <a class="btn btn-dark" href="/users/create" role="button">Add User</a>
+                </div>
+            </div>
+        </div>
+{{ template "footer" . }}
+{{ end }}
+
+{{ define "create_users" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-6">
+                <form action="/users/create" method="post">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Initial Password</label>
+                        <input type="password" class="form-control" id="password" name="password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="admin">Admin</option>
+                            <option value="user" selected>User</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-dark">Create</button>
+                </form>
+            </div>
+            <div class="col-2"></div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "edit_users" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row" id="userHolder">
+            <div class="col-2"></div>
+            <div class="col-6">
+                <form action="/users/{{ .User.ID }}" method="post">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" disabled value="{{ .User.Email }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="password" name="password">
+                        <div id="emailHelp" class="form-text">Leave blank to not change</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">New Role</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="admin" {{ if eq .User.Role "admin"}}selected{{ end }}>Admin</option>
+                            <option value="user" {{ if eq .User.Role "user"}}selected{{ end }}>User</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-dark">Update</button>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                <a class="list-group-item list-group-item-action" href="/users" role="button">Back</a>
+                <button class="list-group-item list-group-item-action bg-danger text-white"
+                        hx-delete="/users/{{ .User.ID }}" hx-target="#userHolder" hx-confirm="Are you sure you wish to delete this user?"
+                >Delete User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}

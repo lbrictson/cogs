@@ -1,0 +1,283 @@
+{{ define "script" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row" id="projectHolder">
+            <div class="col-2"></div>
+            <div class="col-6">
+                <h3>{{ .Project.Name }} | {{ .Script.Name }}</h3>
+                <p>{{ .Script.Description }}</p>
+                <hr>
+                <form method="post">
+                {{if .Script.Parameters}}
+                    <h3>Required Options</h3>
+                    {{ range .Script.Parameters}}
+                            <div class="mb-3">
+                                <label for="{{ .Name }}" class="form-label">{{ .Name }}</label><br>
+                                <small>{{ .Description }}</small>
+                                {{ if .StrictOptions }}
+                                    <select class="form-select" id="{{ .Name }}" name="{{ .Name }}" required>
+                                        {{ range .Options }}
+                                            <option value="{{ . }}">{{ . }}</option>
+                                        {{ end }}
+                                    </select>
+                                {{ else }}
+                                    <input type="text" class="form-control" id="{{ .Name }}" name="{{ .Name }}" required>
+                                {{ end }}
+                            </div>
+                    {{ end }}
+                {{end}}
+                    <h3>Script</h3>
+                    <div class="mb-3">
+                        <textarea class="form-control" spellcheck="false" name="script" id="script" rows="{{ .Lines }}" disabled>{{ .Script.Script }}</textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Run</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a href="/projects/{{ .Project.ID }}" class="list-group-item list-group-item-action">Back to Project</a>
+                    <a href="/projects/{{ .Project.ID }}/{{ .Script.ID }}/history" class="list-group-item list-group-item-action">View Run History</a>
+                    <a href="/projects/{{ .Project.ID }}/{{ .Script.ID }}/edit" class="list-group-item list-group-item-action">Edit Script</a>
+                    <button class="list-group-item list-group-item-action bg-danger text-white"
+                            hx-delete="/projects/{{ .Project.ID }}/{{ .Script.ID }}" hx-target="#projectHolder" hx-confirm="Are you sure you wish to delete this script?"
+                    >Delete Script</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "edit_script" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-6">
+                <h3>{{ .Project.Name }} | {{ .Script.Name }}</h3>
+                <p>{{ .Script.Description }}</p>
+                <hr>
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ .Script.Name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" name="description" value="{{ .Script.Description }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeout" class="form-label">Timeout Seconds</label>
+                        <input type="number" class="form-control" id="timeout" name="timeout" value="{{ .Script.TimeoutSeconds }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="params" class="form-label">Options</label>
+                        <textarea class="form-control" spellcheck="false" name="params" id="params" rows="{{ .OptionsLines }}">{{ .ScriptParams }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="script" class="form-label">Script</label>
+                        <textarea class="form-control" spellcheck="false" name="script" id="script" rows="{{ .Lines }}">{{ .Script.Script }}</textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Update</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-4">
+                <div class="list-group">
+                    <a href="/projects/{{ .Project.ID }}/{{ .Script.ID }}" class="list-group-item list-group-item-action">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "script_history" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+        <div class="container">
+            <div class="row">
+                <div class="col-10">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Status</th>
+                            <th scope="col">At</th>
+                            <th scope="col">Trigger</th>
+                            <th scope="col">Duration (seconds)</th>
+                            <th>Details</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{ $projectID := .Project.ID }}
+                        {{ $scriptID := .Script.ID }}
+                        {{ range .History }}
+                            <tr {{ if eq .Success false }}{{ if eq .Status "finished" }}class="table-danger"{{ else }}class="table-primary"{{ end }}{{ end }}>
+                                <th scope="row">
+                                    {{ if eq .Success true }}
+                                       Success
+                                    {{ else }}
+                                        {{ if eq .Status "finished" }}
+                                            Error
+                                        {{ else }}
+                                            Running
+                                        {{ end }}
+                                    {{ end }}
+                                </th>
+                                <td>{{ .FormatTime }} ({{ .HumanizeCreatedAt }})</td>
+                                <td>{{ .Trigger }} by {{ .TriggeredBy }}</td>
+                                <td>{{ if ne .Status "finished" }}<div class="spinner-border text-dark" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>{{ else }}{{ .Duration }}{{ end }}</td>
+                                <td>{{ if eq .Status "finished" }}<a href="/projects/{{ $projectID }}/{{ $scriptID }}/history/{{ .ID }}" class="btn btn-dark">Details</a>{{end}}</td>
+                            </tr>
+                        {{ end }}
+                        </tbody>
+                    </table>
+                    <div class="d-flex justify-content-center">
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            {{ if ne .Page 0 }}
+                            <a href="/projects/{{ $projectID }}/{{ $scriptID }}/history?page={{ .PreviousPage }}" class="btn btn-dark">Previous</a>
+                            {{ end }}
+                            {{ if .More }}
+                            <a href="/projects/{{ $projectID }}/{{ $scriptID }}/history?page={{ .NextPage }}" class="btn btn-dark">Next</a>
+                            {{ end }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="list-group">
+                        <a href="/projects/{{ .Project.ID }}/{{ .Script.ID }}" class="list-group-item list-group-item-action">Back</a>
+                    </div>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Success Rate
+                            <span class="badge bg-dark rounded-pill">{{ .Stats.SuccessRate }}%</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Average Duration
+                            <span class="badge bg-dark rounded-pill">{{ .Stats.AverageDuration}}s</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "run_history" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+        <div class="container">
+            <div class="row">
+                <div class="col-2">
+                    {{ if .History.Arguments }}
+                    <h4>Arguments</h4>
+                    <pre>{{ range $key, $value := .History.Arguments }}
+{{ $key }} = {{ $value }}{{ end }}
+</pre>
+
+                    {{ end }}
+                </div>
+                <div class="col-8">
+                    <h3>{{ .Project.Name }} | {{ .Script.Name }}</h3>
+                    <div class="card{{ if eq .History.Success false }} bg-danger text-white end {{ end }}">
+                        <div class="card-header">
+                        <div class="d-flex bd-highlight">
+                            <div class="p-2 flex-grow-1 bd-highlight"> Status: {{ if .History.Success }}Successful{{ else }}Failure{{ end }} |
+                                Duration: {{ .History.Duration }} seconds</div>
+                            <div class="p-2 bd-highlight">Run ID: {{ .History.ID }} @ {{ .History.FormatTime }} ({{ .History.HumanizeCreatedAt }})</div>
+                        </div>
+                        </div>
+                        <div class="card-body">
+                            <pre>{{ .History.Output }}</pre>
+                        </div>
+                        <div class="card-footer">
+                            Triggered By:  {{ .History.TriggeredBy }} through {{ .History.Trigger }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="list-group">
+                        <a href="/projects/{{ .Project.ID }}/{{ .Script.ID }}" class="list-group-item list-group-item-action">Back to Script</a>
+                        <a href="/projects/{{ .Project.ID }}/{{ .Script.ID }}/history" class="list-group-item list-group-item-action">Back to History</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "create_script" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <h6>Example Options JSON</h6>
+                <div class="card">
+                    <div class="card-body">
+                        <pre>[
+  {
+    "name": "Name",
+    "description": "Freeform input example",
+    "strict_options": false
+  },
+  {
+    "name": "Greeting",
+    "description": "Dropdown input example",
+    "strict_options": true,
+    "options": [
+      "hello",
+      "hi",
+      "howdy",
+      "sup"
+    ]
+  }
+]</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <h3>{{ .Project.Name }} | Create New Script</h3>
+                <hr>
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" name="description">
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeout" class="form-label">Timeout Seconds</label>
+                        <input type="number" class="form-control" id="timeout" name="timeout" value="300">
+                    </div>
+                    <div class="mb-3">
+                        <label for="params" class="form-label">Options</label>
+                        <textarea class="form-control" spellcheck="false" name="params" id="params" rows="10"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="script" class="form-label">Script</label>
+                        <textarea class="form-control" spellcheck="false" name="script" id="script" rows="10"></textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Create</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a href="/projects/{{ .Project.ID }}" class="list-group-item list-group-item-action">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}

@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+# Ignore Jetbrains IDE
+.idea/
+
+# Ignore builds
+main
