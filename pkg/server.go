@@ -27,15 +27,21 @@ type Server struct {
 }
 
 type NewServerInput struct {
-	Port int
-	DB   *ent.Client
+	Port    int
+	DB      *ent.Client
+	DevMode bool
 }
 
 func NewServer(input NewServerInput) *Server {
+	cookieSecret := strings.Replace(uuid.New().String(), "-", "", -1)
+	if input.DevMode {
+		fmt.Println("WARNING: Running in development mode. Cookie secret is not secure.")
+		cookieSecret = "notAGreatSecretValue"
+	}
 	return &Server{
 		port:           input.Port,
 		db:             input.DB,
-		sessionStore:   sessions.NewCookieStore([]byte(strings.Replace(uuid.New().String(), "-", "", -1))),
+		sessionStore:   sessions.NewCookieStore([]byte(cookieSecret)),
 		sessionManager: NewSessionManager(),
 	}
 }

@@ -11,6 +11,7 @@ type Config struct {
 	DBConnection  *ent.Client
 	LogLevel      string
 	LogFormat     string
+	DevMode       bool
 }
 
 func NewConfig() *Config {
@@ -18,6 +19,7 @@ func NewConfig() *Config {
 	port := flag.Int("port", 8080, "port to listen on")
 	level := flag.String("level", "info", "log level")
 	format := flag.String("format", "text", "log format (text or json)")
+	devMode := flag.Bool("dev", false, "development mode")
 	flag.Parse()
 	dbConn, err := NewDatabaseConnection(NewDatabaseConnectionInput{
 		InMemory: false,
@@ -33,5 +35,6 @@ func NewConfig() *Config {
 		DBConnection:  dbConn,
 		LogLevel:      *level,
 		LogFormat:     *format,
+		DevMode:       *devMode,
 	}
 }
