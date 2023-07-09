@@ -7,6 +7,7 @@ import (
 
 	"github.com/lbrictson/cogs/ent/access"
 	"github.com/lbrictson/cogs/ent/history"
+	"github.com/lbrictson/cogs/ent/notificationchannel"
 	"github.com/lbrictson/cogs/ent/project"
 	"github.com/lbrictson/cogs/ent/schema"
 	"github.com/lbrictson/cogs/ent/script"
@@ -52,6 +53,25 @@ func init() {
 	historyDescStatus := historyFields[9].Descriptor()
 	// history.DefaultStatus holds the default value on creation for the status field.
 	history.DefaultStatus = historyDescStatus.Default.(string)
+	notificationchannelMixin := schema.NotificationChannel{}.Mixin()
+	notificationchannelMixinFields0 := notificationchannelMixin[0].Fields()
+	_ = notificationchannelMixinFields0
+	notificationchannelFields := schema.NotificationChannel{}.Fields()
+	_ = notificationchannelFields
+	// notificationchannelDescCreatedAt is the schema descriptor for created_at field.
+	notificationchannelDescCreatedAt := notificationchannelMixinFields0[0].Descriptor()
+	// notificationchannel.DefaultCreatedAt holds the default value on creation for the created_at field.
+	notificationchannel.DefaultCreatedAt = notificationchannelDescCreatedAt.Default.(func() time.Time)
+	// notificationchannelDescUpdatedAt is the schema descriptor for updated_at field.
+	notificationchannelDescUpdatedAt := notificationchannelMixinFields0[1].Descriptor()
+	// notificationchannel.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	notificationchannel.DefaultUpdatedAt = notificationchannelDescUpdatedAt.Default.(func() time.Time)
+	// notificationchannel.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	notificationchannel.UpdateDefaultUpdatedAt = notificationchannelDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// notificationchannelDescEnabled is the schema descriptor for enabled field.
+	notificationchannelDescEnabled := notificationchannelFields[5].Descriptor()
+	// notificationchannel.DefaultEnabled holds the default value on creation for the enabled field.
+	notificationchannel.DefaultEnabled = notificationchannelDescEnabled.Default.(bool)
 	projectMixin := schema.Project{}.Mixin()
 	projectMixinFields0 := projectMixin[0].Fields()
 	_ = projectMixinFields0
@@ -86,6 +106,10 @@ func init() {
 	scriptDescTimeoutSeconds := scriptFields[3].Descriptor()
 	// script.DefaultTimeoutSeconds holds the default value on creation for the timeout_seconds field.
 	script.DefaultTimeoutSeconds = scriptDescTimeoutSeconds.Default.(int)
+	// scriptDescScheduleEnabled is the schema descriptor for schedule_enabled field.
+	scriptDescScheduleEnabled := scriptFields[6].Descriptor()
+	// script.DefaultScheduleEnabled holds the default value on creation for the schedule_enabled field.
+	script.DefaultScheduleEnabled = scriptDescScheduleEnabled.Default.(bool)
 	secretMixin := schema.Secret{}.Mixin()
 	secretMixinFields0 := secretMixin[0].Fields()
 	_ = secretMixinFields0

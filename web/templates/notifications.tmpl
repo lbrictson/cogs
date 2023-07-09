@@ -1,0 +1,133 @@
+{{ define "notifications" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-8">
+                <div class="list-group">
+                    {{ range .Notifications }}
+                        <a href="/notifications/{{ .ID }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ .Name }}</h5>
+                            </div>
+                            <p class="mb-1">{{ .Type }}</p>
+                        </a>
+                    {{ end }}
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action" href="/notifications/create/slack">Add Slack</a>
+                    <a class="list-group-item list-group-item-action" href="/notifications/create/webhook">Add Webhook</a>
+                    <a class="list-group-item list-group-item-action" href="/notifications/create/email">Add Email</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "create_slack_notification" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <div class="list-group">
+
+                </div>
+            </div>
+            <div class="col-6">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="url" class="form-label">Slack Webhook URL</label>
+                        <input type="text" class="form-control" id="url" name="url" required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Create</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action" href="/notifications">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "create_email_notification" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <div class="list-group">
+
+                </div>
+            </div>
+            <div class="col-6">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Create</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action" href="/notifications">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "create_webhook_notification" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <div class="list-group">
+
+                </div>
+            </div>
+            <div class="col-6">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="url" class="form-label">URL</label>
+                        <input type="text" class="form-control" id="url" name="url" required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Create</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action" href="/notifications">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}

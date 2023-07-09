@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/lbrictson/cogs/ent/access"
 	"github.com/lbrictson/cogs/ent/history"
+	"github.com/lbrictson/cogs/ent/notificationchannel"
 	"github.com/lbrictson/cogs/ent/project"
 	"github.com/lbrictson/cogs/ent/script"
 	"github.com/lbrictson/cogs/ent/scriptstats"
@@ -31,6 +32,8 @@ type Client struct {
 	Access *AccessClient
 	// History is the client for interacting with the History builders.
 	History *HistoryClient
+	// NotificationChannel is the client for interacting with the NotificationChannel builders.
+	NotificationChannel *NotificationChannelClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// Script is the client for interacting with the Script builders.
@@ -56,6 +59,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Access = NewAccessClient(c.config)
 	c.History = NewHistoryClient(c.config)
+	c.NotificationChannel = NewNotificationChannelClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.Script = NewScriptClient(c.config)
 	c.ScriptStats = NewScriptStatsClient(c.config)
@@ -141,15 +145,16 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		Access:      NewAccessClient(cfg),
-		History:     NewHistoryClient(cfg),
-		Project:     NewProjectClient(cfg),
-		Script:      NewScriptClient(cfg),
-		ScriptStats: NewScriptStatsClient(cfg),
-		Secret:      NewSecretClient(cfg),
-		User:        NewUserClient(cfg),
+		ctx:                 ctx,
+		config:              cfg,
+		Access:              NewAccessClient(cfg),
+		History:             NewHistoryClient(cfg),
+		NotificationChannel: NewNotificationChannelClient(cfg),
+		Project:             NewProjectClient(cfg),
+		Script:              NewScriptClient(cfg),
+		ScriptStats:         NewScriptStatsClient(cfg),
+		Secret:              NewSecretClient(cfg),
+		User:                NewUserClient(cfg),
 	}, nil
 }
 
@@ -167,15 +172,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		Access:      NewAccessClient(cfg),
-		History:     NewHistoryClient(cfg),
-		Project:     NewProjectClient(cfg),
-		Script:      NewScriptClient(cfg),
-		ScriptStats: NewScriptStatsClient(cfg),
-		Secret:      NewSecretClient(cfg),
-		User:        NewUserClient(cfg),
+		ctx:                 ctx,
+		config:              cfg,
+		Access:              NewAccessClient(cfg),
+		History:             NewHistoryClient(cfg),
+		NotificationChannel: NewNotificationChannelClient(cfg),
+		Project:             NewProjectClient(cfg),
+		Script:              NewScriptClient(cfg),
+		ScriptStats:         NewScriptStatsClient(cfg),
+		Secret:              NewSecretClient(cfg),
+		User:                NewUserClient(cfg),
 	}, nil
 }
 
@@ -205,7 +211,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Access, c.History, c.Project, c.Script, c.ScriptStats, c.Secret, c.User,
+		c.Access, c.History, c.NotificationChannel, c.Project, c.Script, c.ScriptStats,
+		c.Secret, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -215,7 +222,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Access, c.History, c.Project, c.Script, c.ScriptStats, c.Secret, c.User,
+		c.Access, c.History, c.NotificationChannel, c.Project, c.Script, c.ScriptStats,
+		c.Secret, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -228,6 +236,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Access.mutate(ctx, m)
 	case *HistoryMutation:
 		return c.History.mutate(ctx, m)
+	case *NotificationChannelMutation:
+		return c.NotificationChannel.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
 	case *ScriptMutation:
@@ -476,6 +486,124 @@ func (c *HistoryClient) mutate(ctx context.Context, m *HistoryMutation) (Value, 
 		return (&HistoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown History mutation op: %q", m.Op())
+	}
+}
+
+// NotificationChannelClient is a client for the NotificationChannel schema.
+type NotificationChannelClient struct {
+	config
+}
+
+// NewNotificationChannelClient returns a client for the NotificationChannel from the given config.
+func NewNotificationChannelClient(c config) *NotificationChannelClient {
+	return &NotificationChannelClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `notificationchannel.Hooks(f(g(h())))`.
+func (c *NotificationChannelClient) Use(hooks ...Hook) {
+	c.hooks.NotificationChannel = append(c.hooks.NotificationChannel, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `notificationchannel.Intercept(f(g(h())))`.
+func (c *NotificationChannelClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NotificationChannel = append(c.inters.NotificationChannel, interceptors...)
+}
+
+// Create returns a builder for creating a NotificationChannel entity.
+func (c *NotificationChannelClient) Create() *NotificationChannelCreate {
+	mutation := newNotificationChannelMutation(c.config, OpCreate)
+	return &NotificationChannelCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NotificationChannel entities.
+func (c *NotificationChannelClient) CreateBulk(builders ...*NotificationChannelCreate) *NotificationChannelCreateBulk {
+	return &NotificationChannelCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NotificationChannel.
+func (c *NotificationChannelClient) Update() *NotificationChannelUpdate {
+	mutation := newNotificationChannelMutation(c.config, OpUpdate)
+	return &NotificationChannelUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NotificationChannelClient) UpdateOne(nc *NotificationChannel) *NotificationChannelUpdateOne {
+	mutation := newNotificationChannelMutation(c.config, OpUpdateOne, withNotificationChannel(nc))
+	return &NotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NotificationChannelClient) UpdateOneID(id int) *NotificationChannelUpdateOne {
+	mutation := newNotificationChannelMutation(c.config, OpUpdateOne, withNotificationChannelID(id))
+	return &NotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NotificationChannel.
+func (c *NotificationChannelClient) Delete() *NotificationChannelDelete {
+	mutation := newNotificationChannelMutation(c.config, OpDelete)
+	return &NotificationChannelDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NotificationChannelClient) DeleteOne(nc *NotificationChannel) *NotificationChannelDeleteOne {
+	return c.DeleteOneID(nc.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NotificationChannelClient) DeleteOneID(id int) *NotificationChannelDeleteOne {
+	builder := c.Delete().Where(notificationchannel.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NotificationChannelDeleteOne{builder}
+}
+
+// Query returns a query builder for NotificationChannel.
+func (c *NotificationChannelClient) Query() *NotificationChannelQuery {
+	return &NotificationChannelQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNotificationChannel},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NotificationChannel entity by its id.
+func (c *NotificationChannelClient) Get(ctx context.Context, id int) (*NotificationChannel, error) {
+	return c.Query().Where(notificationchannel.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NotificationChannelClient) GetX(ctx context.Context, id int) *NotificationChannel {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *NotificationChannelClient) Hooks() []Hook {
+	return c.hooks.NotificationChannel
+}
+
+// Interceptors returns the client interceptors.
+func (c *NotificationChannelClient) Interceptors() []Interceptor {
+	return c.inters.NotificationChannel
+}
+
+func (c *NotificationChannelClient) mutate(ctx context.Context, m *NotificationChannelMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NotificationChannelCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NotificationChannelUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NotificationChannelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NotificationChannel mutation op: %q", m.Op())
 	}
 }
 
@@ -1072,9 +1200,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Access, History, Project, Script, ScriptStats, Secret, User []ent.Hook
+		Access, History, NotificationChannel, Project, Script, ScriptStats, Secret,
+		User []ent.Hook
 	}
 	inters struct {
-		Access, History, Project, Script, ScriptStats, Secret, User []ent.Interceptor
+		Access, History, NotificationChannel, Project, Script, ScriptStats, Secret,
+		User []ent.Interceptor
 	}
 )

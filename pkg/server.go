@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/lbrictson/cogs/ent"
 	"github.com/lbrictson/cogs/web"
+	"github.com/robfig/cron/v3"
 	"html/template"
 	"io"
 	"io/fs"
@@ -24,6 +25,7 @@ type Server struct {
 	db             *ent.Client
 	sessionStore   *sessions.CookieStore
 	sessionManager *SessionManager
+	cronService    *cron.Cron
 }
 
 type NewServerInput struct {
@@ -43,6 +45,7 @@ func NewServer(input NewServerInput) *Server {
 		db:             input.DB,
 		sessionStore:   sessions.NewCookieStore([]byte(cookieSecret)),
 		sessionManager: NewSessionManager(),
+		cronService:    cron.New(),
 	}
 }
 
@@ -82,6 +85,10 @@ func (s *Server) Run(ctx context.Context) {
 	loginRequiredRoutes.GET("/projects/:projectID/secrets/edit/:secretID", renderViewUpdateSecretPage(ctx, s.db), s.projectAdminRequired)
 	loginRequiredRoutes.POST("/projects/:projectID/secrets/edit/:secretID", formUpdateSecret(ctx, s.db), s.projectAdminRequired)
 	loginRequiredRoutes.DELETE("/projects/:projectID/secrets/delete/:secretID", hookDeleteSecret(ctx, s.db), s.projectAdminRequired)
+	// Notification routes
+	loginRequiredRoutes.GET("/notifications", renderNotificationsPage(ctx, s.db), s.globalAdminRequired)
+	loginRequiredRoutes.GET("/notifications/create/:type", renderCreateNotificationPage(ctx), s.globalAdminRequired)
+	loginRequiredRoutes.POST("/notifications/create/:type", formCreateNotificationChannel(ctx, s.db), s.globalAdminRequired)
 	// User routes
 	loginRequiredRoutes.GET("/users", renderUsersPage(ctx, s.db), s.globalAdminRequired)
 	loginRequiredRoutes.GET("/users/create", renderCreateUsersPage(ctx), s.globalAdminRequired)

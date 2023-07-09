@@ -89,6 +89,26 @@ func ProjectID(v int) predicate.Script {
 	return predicate.Script(sql.FieldEQ(FieldProjectID, v))
 }
 
+// ScheduleEnabled applies equality check predicate on the "schedule_enabled" field. It's identical to ScheduleEnabledEQ.
+func ScheduleEnabled(v bool) predicate.Script {
+	return predicate.Script(sql.FieldEQ(FieldScheduleEnabled, v))
+}
+
+// ScheduleCron applies equality check predicate on the "schedule_cron" field. It's identical to ScheduleCronEQ.
+func ScheduleCron(v string) predicate.Script {
+	return predicate.Script(sql.FieldEQ(FieldScheduleCron, v))
+}
+
+// SuccessNotificationChannelID applies equality check predicate on the "success_notification_channel_id" field. It's identical to SuccessNotificationChannelIDEQ.
+func SuccessNotificationChannelID(v int) predicate.Script {
+	return predicate.Script(sql.FieldEQ(FieldSuccessNotificationChannelID, v))
+}
+
+// FailureNotificationChannelID applies equality check predicate on the "failure_notification_channel_id" field. It's identical to FailureNotificationChannelIDEQ.
+func FailureNotificationChannelID(v int) predicate.Script {
+	return predicate.Script(sql.FieldEQ(FieldFailureNotificationChannelID, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Script {
 	return predicate.Script(sql.FieldEQ(FieldCreatedAt, v))
@@ -462,6 +482,191 @@ func ParametersIsNil() predicate.Script {
 // ParametersNotNil applies the NotNil predicate on the "parameters" field.
 func ParametersNotNil() predicate.Script {
 	return predicate.Script(sql.FieldNotNull(FieldParameters))
+}
+
+// ScheduleEnabledEQ applies the EQ predicate on the "schedule_enabled" field.
+func ScheduleEnabledEQ(v bool) predicate.Script {
+	return predicate.Script(sql.FieldEQ(FieldScheduleEnabled, v))
+}
+
+// ScheduleEnabledNEQ applies the NEQ predicate on the "schedule_enabled" field.
+func ScheduleEnabledNEQ(v bool) predicate.Script {
+	return predicate.Script(sql.FieldNEQ(FieldScheduleEnabled, v))
+}
+
+// ScheduleCronEQ applies the EQ predicate on the "schedule_cron" field.
+func ScheduleCronEQ(v string) predicate.Script {
+	return predicate.Script(sql.FieldEQ(FieldScheduleCron, v))
+}
+
+// ScheduleCronNEQ applies the NEQ predicate on the "schedule_cron" field.
+func ScheduleCronNEQ(v string) predicate.Script {
+	return predicate.Script(sql.FieldNEQ(FieldScheduleCron, v))
+}
+
+// ScheduleCronIn applies the In predicate on the "schedule_cron" field.
+func ScheduleCronIn(vs ...string) predicate.Script {
+	return predicate.Script(sql.FieldIn(FieldScheduleCron, vs...))
+}
+
+// ScheduleCronNotIn applies the NotIn predicate on the "schedule_cron" field.
+func ScheduleCronNotIn(vs ...string) predicate.Script {
+	return predicate.Script(sql.FieldNotIn(FieldScheduleCron, vs...))
+}
+
+// ScheduleCronGT applies the GT predicate on the "schedule_cron" field.
+func ScheduleCronGT(v string) predicate.Script {
+	return predicate.Script(sql.FieldGT(FieldScheduleCron, v))
+}
+
+// ScheduleCronGTE applies the GTE predicate on the "schedule_cron" field.
+func ScheduleCronGTE(v string) predicate.Script {
+	return predicate.Script(sql.FieldGTE(FieldScheduleCron, v))
+}
+
+// ScheduleCronLT applies the LT predicate on the "schedule_cron" field.
+func ScheduleCronLT(v string) predicate.Script {
+	return predicate.Script(sql.FieldLT(FieldScheduleCron, v))
+}
+
+// ScheduleCronLTE applies the LTE predicate on the "schedule_cron" field.
+func ScheduleCronLTE(v string) predicate.Script {
+	return predicate.Script(sql.FieldLTE(FieldScheduleCron, v))
+}
+
+// ScheduleCronContains applies the Contains predicate on the "schedule_cron" field.
+func ScheduleCronContains(v string) predicate.Script {
+	return predicate.Script(sql.FieldContains(FieldScheduleCron, v))
+}
+
+// ScheduleCronHasPrefix applies the HasPrefix predicate on the "schedule_cron" field.
+func ScheduleCronHasPrefix(v string) predicate.Script {
+	return predicate.Script(sql.FieldHasPrefix(FieldScheduleCron, v))
+}
+
+// ScheduleCronHasSuffix applies the HasSuffix predicate on the "schedule_cron" field.
+func ScheduleCronHasSuffix(v string) predicate.Script {
+	return predicate.Script(sql.FieldHasSuffix(FieldScheduleCron, v))
+}
+
+// ScheduleCronIsNil applies the IsNil predicate on the "schedule_cron" field.
+func ScheduleCronIsNil() predicate.Script {
+	return predicate.Script(sql.FieldIsNull(FieldScheduleCron))
+}
+
+// ScheduleCronNotNil applies the NotNil predicate on the "schedule_cron" field.
+func ScheduleCronNotNil() predicate.Script {
+	return predicate.Script(sql.FieldNotNull(FieldScheduleCron))
+}
+
+// ScheduleCronEqualFold applies the EqualFold predicate on the "schedule_cron" field.
+func ScheduleCronEqualFold(v string) predicate.Script {
+	return predicate.Script(sql.FieldEqualFold(FieldScheduleCron, v))
+}
+
+// ScheduleCronContainsFold applies the ContainsFold predicate on the "schedule_cron" field.
+func ScheduleCronContainsFold(v string) predicate.Script {
+	return predicate.Script(sql.FieldContainsFold(FieldScheduleCron, v))
+}
+
+// SuccessNotificationChannelIDEQ applies the EQ predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDEQ(v int) predicate.Script {
+	return predicate.Script(sql.FieldEQ(FieldSuccessNotificationChannelID, v))
+}
+
+// SuccessNotificationChannelIDNEQ applies the NEQ predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDNEQ(v int) predicate.Script {
+	return predicate.Script(sql.FieldNEQ(FieldSuccessNotificationChannelID, v))
+}
+
+// SuccessNotificationChannelIDIn applies the In predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDIn(vs ...int) predicate.Script {
+	return predicate.Script(sql.FieldIn(FieldSuccessNotificationChannelID, vs...))
+}
+
+// SuccessNotificationChannelIDNotIn applies the NotIn predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDNotIn(vs ...int) predicate.Script {
+	return predicate.Script(sql.FieldNotIn(FieldSuccessNotificationChannelID, vs...))
+}
+
+// SuccessNotificationChannelIDGT applies the GT predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDGT(v int) predicate.Script {
+	return predicate.Script(sql.FieldGT(FieldSuccessNotificationChannelID, v))
+}
+
+// SuccessNotificationChannelIDGTE applies the GTE predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDGTE(v int) predicate.Script {
+	return predicate.Script(sql.FieldGTE(FieldSuccessNotificationChannelID, v))
+}
+
+// SuccessNotificationChannelIDLT applies the LT predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDLT(v int) predicate.Script {
+	return predicate.Script(sql.FieldLT(FieldSuccessNotificationChannelID, v))
+}
+
+// SuccessNotificationChannelIDLTE applies the LTE predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDLTE(v int) predicate.Script {
+	return predicate.Script(sql.FieldLTE(FieldSuccessNotificationChannelID, v))
+}
+
+// SuccessNotificationChannelIDIsNil applies the IsNil predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDIsNil() predicate.Script {
+	return predicate.Script(sql.FieldIsNull(FieldSuccessNotificationChannelID))
+}
+
+// SuccessNotificationChannelIDNotNil applies the NotNil predicate on the "success_notification_channel_id" field.
+func SuccessNotificationChannelIDNotNil() predicate.Script {
+	return predicate.Script(sql.FieldNotNull(FieldSuccessNotificationChannelID))
+}
+
+// FailureNotificationChannelIDEQ applies the EQ predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDEQ(v int) predicate.Script {
+	return predicate.Script(sql.FieldEQ(FieldFailureNotificationChannelID, v))
+}
+
+// FailureNotificationChannelIDNEQ applies the NEQ predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDNEQ(v int) predicate.Script {
+	return predicate.Script(sql.FieldNEQ(FieldFailureNotificationChannelID, v))
+}
+
+// FailureNotificationChannelIDIn applies the In predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDIn(vs ...int) predicate.Script {
+	return predicate.Script(sql.FieldIn(FieldFailureNotificationChannelID, vs...))
+}
+
+// FailureNotificationChannelIDNotIn applies the NotIn predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDNotIn(vs ...int) predicate.Script {
+	return predicate.Script(sql.FieldNotIn(FieldFailureNotificationChannelID, vs...))
+}
+
+// FailureNotificationChannelIDGT applies the GT predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDGT(v int) predicate.Script {
+	return predicate.Script(sql.FieldGT(FieldFailureNotificationChannelID, v))
+}
+
+// FailureNotificationChannelIDGTE applies the GTE predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDGTE(v int) predicate.Script {
+	return predicate.Script(sql.FieldGTE(FieldFailureNotificationChannelID, v))
+}
+
+// FailureNotificationChannelIDLT applies the LT predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDLT(v int) predicate.Script {
+	return predicate.Script(sql.FieldLT(FieldFailureNotificationChannelID, v))
+}
+
+// FailureNotificationChannelIDLTE applies the LTE predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDLTE(v int) predicate.Script {
+	return predicate.Script(sql.FieldLTE(FieldFailureNotificationChannelID, v))
+}
+
+// FailureNotificationChannelIDIsNil applies the IsNil predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDIsNil() predicate.Script {
+	return predicate.Script(sql.FieldIsNull(FieldFailureNotificationChannelID))
+}
+
+// FailureNotificationChannelIDNotNil applies the NotNil predicate on the "failure_notification_channel_id" field.
+func FailureNotificationChannelIDNotNil() predicate.Script {
+	return predicate.Script(sql.FieldNotNull(FieldFailureNotificationChannelID))
 }
 
 // And groups predicates with the AND operator between them.

@@ -12,6 +12,9 @@ type Access func(*sql.Selector)
 // History is the predicate function for history builders.
 type History func(*sql.Selector)
 
+// NotificationChannel is the predicate function for notificationchannel builders.
+type NotificationChannel func(*sql.Selector)
+
 // Project is the predicate function for project builders.
 type Project func(*sql.Selector)
 

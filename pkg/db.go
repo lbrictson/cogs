@@ -6,6 +6,7 @@ import (
 	"github.com/lbrictson/cogs/ent"
 	"github.com/lbrictson/cogs/ent/access"
 	"github.com/lbrictson/cogs/ent/history"
+	"github.com/lbrictson/cogs/ent/notificationchannel"
 	"github.com/lbrictson/cogs/ent/project"
 	"github.com/lbrictson/cogs/ent/schema"
 	"github.com/lbrictson/cogs/ent/script"
@@ -182,26 +183,35 @@ func convertEntScriptToScriptModel(entScript *ent.Script) ScriptModel {
 	if entScript == nil {
 		return ScriptModel{}
 	}
-	return ScriptModel{
-		ID:             entScript.ID,
-		Name:           entScript.Name,
-		Script:         entScript.Script,
-		ProjectID:      entScript.ProjectID,
-		Description:    entScript.Description,
-		TimeoutSeconds: entScript.TimeoutSeconds,
-		Parameters:     entScript.Parameters,
-		CreatedAt:      entScript.CreatedAt,
-		UpdatedAt:      entScript.UpdatedAt,
+	s := ScriptModel{
+		ID:                    entScript.ID,
+		Name:                  entScript.Name,
+		Script:                entScript.Script,
+		ProjectID:             entScript.ProjectID,
+		Description:           entScript.Description,
+		TimeoutSeconds:        entScript.TimeoutSeconds,
+		Parameters:            entScript.Parameters,
+		CreatedAt:             entScript.CreatedAt,
+		UpdatedAt:             entScript.UpdatedAt,
+		ScheduleCron:          entScript.ScheduleCron,
+		ScheduleEnabled:       entScript.ScheduleEnabled,
+		SuccessNotificationID: entScript.SuccessNotificationChannelID,
+		FailureNotificationID: entScript.FailureNotificationChannelID,
 	}
+	return s
 }
 
 type CreateScriptInput struct {
-	ProjectID      int
-	Name           string
-	Script         string
-	Description    string
-	TimeoutSeconds int
-	Parameters     []schema.ScriptInputOptions
+	ProjectID                    int
+	Name                         string
+	Script                       string
+	Description                  string
+	TimeoutSeconds               int
+	Parameters                   []schema.ScriptInputOptions
+	SuccessNotificationChannelID *int
+	FailureNotificationChannelID *int
+	ScheduleCron                 string
+	ScheduleEnabled              bool
 }
 
 func createScript(ctx context.Context, db *ent.Client, input CreateScriptInput) (ScriptModel, error) {
@@ -216,6 +226,10 @@ func createScript(ctx context.Context, db *ent.Client, input CreateScriptInput) 
 		SetTimeoutSeconds(input.TimeoutSeconds).
 		SetProjectID(p.ID).
 		SetParameters(input.Parameters).
+		SetScheduleEnabled(input.ScheduleEnabled).
+		SetScheduleCron(input.ScheduleCron).
+		SetNillableSuccessNotificationChannelID(input.SuccessNotificationChannelID).
+		SetNillableFailureNotificationChannelID(input.FailureNotificationChannelID).
 		Save(ctx)
 	if err != nil {
 		return ScriptModel{}, err
@@ -249,11 +263,15 @@ func getScripts(ctx context.Context, db *ent.Client) ([]ScriptModel, error) {
 }
 
 type UpdateScriptInput struct {
-	Name           *string
-	Script         *string
-	Description    *string
-	TimeoutSeconds *int
-	Parameters     *[]schema.ScriptInputOptions
+	Name                         *string
+	Script                       *string
+	Description                  *string
+	TimeoutSeconds               *int
+	Parameters                   *[]schema.ScriptInputOptions
+	SuccessNotificationChannelID *int
+	FailureNotificationChannelID *int
+	ScheduleCron                 *string
+	ScheduleEnabled              *bool
 }
 
 func updateScript(ctx context.Context, db *ent.Client, id int, input UpdateScriptInput) (ScriptModel, error) {
@@ -272,6 +290,18 @@ func updateScript(ctx context.Context, db *ent.Client, id int, input UpdateScrip
 	}
 	if input.Parameters != nil {
 		builder.SetParameters(*input.Parameters)
+	}
+	if input.SuccessNotificationChannelID != nil {
+		builder.SetNillableSuccessNotificationChannelID(input.SuccessNotificationChannelID)
+	}
+	if input.FailureNotificationChannelID != nil {
+		builder.SetNillableFailureNotificationChannelID(input.FailureNotificationChannelID)
+	}
+	if input.ScheduleCron != nil {
+		builder.SetScheduleCron(*input.ScheduleCron)
+	}
+	if input.ScheduleEnabled != nil {
+		builder.SetScheduleEnabled(*input.ScheduleEnabled)
 	}
 	_, err := builder.Where(script.IDEQ(id)).Save(ctx)
 	if err != nil {
@@ -769,4 +799,118 @@ func updateScriptStats(ctx context.Context, db *ent.Client, input UpdateScriptSt
 	}
 	s, err = builder.Save(ctx)
 	return convertEntScriptStatsToScriptStatsModel(s), nil
+}
+
+func convertEntNotificationChannelToNotificationChannelModel(entNotificationChannel *ent.NotificationChannel) NotificationChannelModel {
+	if entNotificationChannel == nil {
+		return NotificationChannelModel{}
+	}
+	return NotificationChannelModel{
+		ID:            entNotificationChannel.ID,
+		CreatedAt:     entNotificationChannel.CreatedAt,
+		UpdatedAt:     entNotificationChannel.UpdatedAt,
+		Name:          entNotificationChannel.Name,
+		Type:          entNotificationChannel.Type,
+		SlackConfig:   entNotificationChannel.SlackConfig,
+		EmailConfig:   entNotificationChannel.EmailConfig,
+		WebhookConfig: entNotificationChannel.WebhookConfig,
+		Enabled:       entNotificationChannel.Enabled,
+	}
+}
+
+type CreateNotificationChannelInput struct {
+	Name          string
+	Type          string
+	SlackConfig   schema.SlackConfig
+	EmailConfig   schema.EmailConfig
+	WebhookConfig schema.WebhookConfig
+	Enabled       bool
+}
+
+func createNotificationChannel(ctx context.Context, db *ent.Client, input CreateNotificationChannelInput) (NotificationChannelModel, error) {
+	nc, err := db.NotificationChannel.Create().
+		SetName(input.Name).
+		SetType(input.Type).
+		SetSlackConfig(input.SlackConfig).
+		SetEmailConfig(input.EmailConfig).
+		SetWebhookConfig(input.WebhookConfig).
+		SetEnabled(input.Enabled).
+		Save(ctx)
+	if err != nil {
+		return NotificationChannelModel{}, err
+	}
+	return convertEntNotificationChannelToNotificationChannelModel(nc), nil
+}
+
+type UpdateNotificationChannelInput struct {
+	Name          *string
+	Type          *string
+	SlackConfig   *schema.SlackConfig
+	EmailConfig   *schema.EmailConfig
+	WebhookConfig *schema.WebhookConfig
+	Enabled       *bool
+}
+
+func updateNotificationChannel(ctx context.Context, db *ent.Client, id int, input UpdateNotificationChannelInput) (NotificationChannelModel, error) {
+	nc, err := db.NotificationChannel.Query().Where(notificationchannel.IDEQ(id)).First(ctx)
+	if err != nil {
+		return NotificationChannelModel{}, err
+	}
+	builder := db.NotificationChannel.UpdateOneID(nc.ID)
+	if input.Name != nil {
+		builder = builder.SetName(*input.Name)
+	}
+	if input.Type != nil {
+		builder = builder.SetType(*input.Type)
+	}
+	if input.SlackConfig != nil {
+		builder = builder.SetSlackConfig(*input.SlackConfig)
+	}
+	if input.EmailConfig != nil {
+		builder = builder.SetEmailConfig(*input.EmailConfig)
+	}
+	if input.WebhookConfig != nil {
+		builder = builder.SetWebhookConfig(*input.WebhookConfig)
+	}
+	if input.Enabled != nil {
+		builder = builder.SetEnabled(*input.Enabled)
+	}
+	nc, err = builder.Save(ctx)
+	return convertEntNotificationChannelToNotificationChannelModel(nc), nil
+}
+
+func getNotificationChannelByID(ctx context.Context, db *ent.Client, id int) (NotificationChannelModel, error) {
+	nc, err := db.NotificationChannel.Query().Where(notificationchannel.IDEQ(id)).First(ctx)
+	if err != nil {
+		return NotificationChannelModel{}, err
+	}
+	return convertEntNotificationChannelToNotificationChannelModel(nc), nil
+}
+
+func getNotificationChannels(ctx context.Context, db *ent.Client) ([]NotificationChannelModel, error) {
+	ncs, err := db.NotificationChannel.Query().All(ctx)
+	if err != nil {
+		return []NotificationChannelModel{}, err
+	}
+	var models []NotificationChannelModel
+	for _, nc := range ncs {
+		models = append(models, convertEntNotificationChannelToNotificationChannelModel(nc))
+	}
+	return models, nil
+}
+
+func deleteNotificationChannel(ctx context.Context, db *ent.Client, id int) error {
+	return db.NotificationChannel.DeleteOneID(id).Exec(ctx)
+}
+
+func getNotificationChannelsByType(ctx context.Context, db *ent.Client, notificationType string) ([]NotificationChannelModel, error) {
+	ncs, err := db.NotificationChannel.Query().Where(notificationchannel.TypeEQ(notificationType)).All(ctx)
+	if err != nil {
+		return []NotificationChannelModel{}, err
+	}
+	var models []NotificationChannelModel
+	for _, nc := range ncs {
+		models = append(models, convertEntNotificationChannelToNotificationChannelModel(nc))
+	}
+	return models, nil
 }

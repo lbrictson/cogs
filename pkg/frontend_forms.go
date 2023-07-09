@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/lbrictson/cogs/ent"
 	"github.com/lbrictson/cogs/ent/schema"
+	"github.com/robfig/cron/v3"
 	"net/http"
 	"strconv"
 	"strings"
@@ -222,11 +223,16 @@ func formUpdateScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			})
 		}
 		type FormData struct {
-			Name        string `form:"name"`
-			Description string `form:"description"`
-			Timeout     int    `form:"timeout"`
-			Script      string `form:"script"`
-			Params      string `form:"params"`
+			Name                  string `form:"name"`
+			Description           string `form:"description"`
+			Timeout               int    `form:"timeout"`
+			Script                string `form:"script"`
+			Params                string `form:"params"`
+			ScheduleEnabled       string `form:"scheduleEnabled"`
+			Schedule              string `form:"schedule"`
+			ActualScheduleEnabled bool
+			SuccessNotification   int `form:"successNotification"`
+			FailureNotification   int `form:"failureNotification"`
 		}
 		var data FormData
 		if err := c.Bind(&data); err != nil {
@@ -234,6 +240,17 @@ func formUpdateScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
 				"Message": err.Error(),
 			})
+		}
+		if data.ScheduleEnabled == "on" {
+			data.ActualScheduleEnabled = true
+			// Need to validate schedule
+			_, err := cron.ParseStandard(data.Schedule)
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": fmt.Sprintf("Failed to validate cron schedule %v: %v", data.Schedule, err.Error()),
+				})
+			}
 		}
 		updatedOptionsData := []schema.ScriptInputOptions{}
 		// Validate param data
@@ -259,10 +276,14 @@ func formUpdateScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 		data.Script = strings.ReplaceAll(data.Script, "\r\n", "\n")
 		data.Script = strings.TrimSpace(data.Script)
 		input := UpdateScriptInput{
-			Name:           &data.Name,
-			Script:         &data.Script,
-			Description:    &data.Description,
-			TimeoutSeconds: &data.Timeout,
+			Name:                         &data.Name,
+			Script:                       &data.Script,
+			Description:                  &data.Description,
+			TimeoutSeconds:               &data.Timeout,
+			ScheduleCron:                 &data.Schedule,
+			ScheduleEnabled:              &data.ActualScheduleEnabled,
+			SuccessNotificationChannelID: &data.SuccessNotification,
+			FailureNotificationChannelID: &data.FailureNotification,
 		}
 		if updatedOptionsNeeded {
 			input.Parameters = &updatedOptionsData
@@ -291,11 +312,16 @@ func formCreateScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			})
 		}
 		type FormData struct {
-			Name        string `form:"name"`
-			Description string `form:"description"`
-			Timeout     int    `form:"timeout"`
-			Script      string `form:"script"`
-			Params      string `form:"params"`
+			Name                  string `form:"name"`
+			Description           string `form:"description"`
+			Timeout               int    `form:"timeout"`
+			Script                string `form:"script"`
+			Params                string `form:"params"`
+			ScheduleEnabled       string `form:"scheduleEnabled"`
+			Schedule              string `form:"schedule"`
+			ActualScheduleEnabled bool
+			SuccessNotification   int `form:"successNotification"`
+			FailureNotification   int `form:"failureNotification"`
 		}
 		var data FormData
 		if err := c.Bind(&data); err != nil {
@@ -303,6 +329,17 @@ func formCreateScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
 				"Message": err.Error(),
 			})
+		}
+		if data.ScheduleEnabled == "on" {
+			data.ActualScheduleEnabled = true
+			// Need to validate schedule
+			_, err := cron.ParseStandard(data.Schedule)
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": fmt.Sprintf("Failed to validate cron schedule %v: %v", data.Schedule, err.Error()),
+				})
+			}
 		}
 		updatedOptionsData := []schema.ScriptInputOptions{}
 		// Validate param data
@@ -327,12 +364,16 @@ func formCreateScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 		data.Script = strings.ReplaceAll(data.Script, "\r\n", "\n")
 		data.Script = strings.TrimSpace(data.Script)
 		input := CreateScriptInput{
-			Name:           data.Name,
-			Script:         data.Script,
-			Description:    data.Description,
-			TimeoutSeconds: data.Timeout,
-			ProjectID:      i,
-			Parameters:     updatedOptionsData,
+			Name:                         data.Name,
+			Script:                       data.Script,
+			Description:                  data.Description,
+			TimeoutSeconds:               data.Timeout,
+			ProjectID:                    i,
+			Parameters:                   updatedOptionsData,
+			ScheduleCron:                 data.Schedule,
+			ScheduleEnabled:              data.ActualScheduleEnabled,
+			SuccessNotificationChannelID: &data.SuccessNotification,
+			FailureNotificationChannelID: &data.FailureNotification,
 		}
 		script, err := createScript(ctx, db, input)
 		if err != nil {
@@ -465,5 +506,92 @@ func formUpdateSecret(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 		}
 		LogFromCtx(ctx).Info("updated secret", "secret", secret.Name, "user", userFromEchoContext(c))
 		return c.Redirect(http.StatusFound, "/projects/"+c.Param("projectID")+"/secrets")
+	})
+}
+
+func formCreateNotificationChannel(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return echo.HandlerFunc(func(c echo.Context) error {
+		switch c.Param("type") {
+		case "slack":
+			type FormData struct {
+				Name string `form:"name"`
+				URL  string `form:"url"`
+			}
+			var data FormData
+			if err := c.Bind(&data); err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			_, err := createNotificationChannel(ctx, db, CreateNotificationChannelInput{
+				Name:        data.Name,
+				Type:        "slack",
+				SlackConfig: schema.SlackConfig{WebhookURL: data.URL},
+				Enabled:     true,
+			})
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			LogFromCtx(ctx).Info("created notification channel", "name", data.Name, "user", userFromEchoContext(c))
+			return c.Redirect(http.StatusFound, "/notifications")
+		case "email":
+			type FormData struct {
+				Name  string `form:"name"`
+				Email string `form:"email"`
+			}
+			var data FormData
+			if err := c.Bind(&data); err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			_, err := createNotificationChannel(ctx, db, CreateNotificationChannelInput{
+				Name:        data.Name,
+				Type:        "email",
+				EmailConfig: schema.EmailConfig{To: data.Email},
+			})
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			LogFromCtx(ctx).Info("created notification channel", "name", data.Name, "user", userFromEchoContext(c))
+			return c.Redirect(http.StatusFound, "/notifications")
+		case "webhook":
+			type FormData struct {
+				Name string `form:"name"`
+				URL  string `form:"url"`
+			}
+			var data FormData
+			if err := c.Bind(&data); err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			_, err := createNotificationChannel(ctx, db, CreateNotificationChannelInput{
+				Name:          data.Name,
+				Type:          "webhook",
+				WebhookConfig: schema.WebhookConfig{URL: data.URL},
+			})
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			LogFromCtx(ctx).Info("created notification channel", "name", data.Name, "user", userFromEchoContext(c))
+			return c.Redirect(http.StatusFound, "/notifications")
+		default:
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": "unknown notification channel type",
+			})
+		}
 	})
 }

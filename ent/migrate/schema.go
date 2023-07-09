@@ -45,6 +45,24 @@ var (
 		Columns:    HistoriesColumns,
 		PrimaryKey: []*schema.Column{HistoriesColumns[0]},
 	}
+	// NotificationChannelsColumns holds the columns for the "notification_channels" table.
+	NotificationChannelsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "type", Type: field.TypeString},
+		{Name: "slack_config", Type: field.TypeJSON, Nullable: true},
+		{Name: "email_config", Type: field.TypeJSON, Nullable: true},
+		{Name: "webhook_config", Type: field.TypeJSON, Nullable: true},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+	}
+	// NotificationChannelsTable holds the schema information for the "notification_channels" table.
+	NotificationChannelsTable = &schema.Table{
+		Name:       "notification_channels",
+		Columns:    NotificationChannelsColumns,
+		PrimaryKey: []*schema.Column{NotificationChannelsColumns[0]},
+	}
 	// ProjectsColumns holds the columns for the "projects" table.
 	ProjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -70,6 +88,10 @@ var (
 		{Name: "timeout_seconds", Type: field.TypeInt, Default: 300},
 		{Name: "project_id", Type: field.TypeInt},
 		{Name: "parameters", Type: field.TypeJSON, Nullable: true},
+		{Name: "schedule_enabled", Type: field.TypeBool, Default: false},
+		{Name: "schedule_cron", Type: field.TypeString, Nullable: true},
+		{Name: "success_notification_channel_id", Type: field.TypeInt, Nullable: true},
+		{Name: "failure_notification_channel_id", Type: field.TypeInt, Nullable: true},
 	}
 	// ScriptsTable holds the schema information for the "scripts" table.
 	ScriptsTable = &schema.Table{
@@ -134,6 +156,7 @@ var (
 	Tables = []*schema.Table{
 		AccessesTable,
 		HistoriesTable,
+		NotificationChannelsTable,
 		ProjectsTable,
 		ScriptsTable,
 		ScriptStatsTable,

@@ -33,6 +33,10 @@ func (Script) Fields() []ent.Field {
 		field.Int("timeout_seconds").Default(300),
 		field.Int("project_id"),
 		field.JSON("parameters", []ScriptInputOptions{}).Optional(),
+		field.Bool("schedule_enabled").Default(false),
+		field.String("schedule_cron").Optional(),
+		field.Int("success_notification_channel_id").Optional().Nillable(),
+		field.Int("failure_notification_channel_id").Optional().Nillable(),
 	}
 }
 

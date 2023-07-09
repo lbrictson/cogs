@@ -16,6 +16,8 @@ type Tx struct {
 	Access *AccessClient
 	// History is the client for interacting with the History builders.
 	History *HistoryClient
+	// NotificationChannel is the client for interacting with the NotificationChannel builders.
+	NotificationChannel *NotificationChannelClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// Script is the client for interacting with the Script builders.
@@ -159,6 +161,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Access = NewAccessClient(tx.config)
 	tx.History = NewHistoryClient(tx.config)
+	tx.NotificationChannel = NewNotificationChannelClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.Script = NewScriptClient(tx.config)
 	tx.ScriptStats = NewScriptStatsClient(tx.config)

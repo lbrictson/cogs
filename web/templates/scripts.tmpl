@@ -3,7 +3,22 @@
     {{ template "navbar" . }}
     <div class="container">
         <div class="row" id="projectHolder">
-            <div class="col-2"></div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Schedule</h5>{{ if .Script.ScheduleEnabled }}
+                        <span class="badge bg-success">Enabled</span>
+                    {{ else }}
+                        <span class="badge bg-danger">Disabled</span>
+                    {{ end }}
+                    </div>
+                    {{ if .Script.ScheduleCron }}
+                    <div class="card-body">
+                        <code>Cron Expression: {{ .Script.ScheduleCron }}</code>
+                    </div>
+                    {{ end }}
+                </div>
+            </div>
             <div class="col-6">
                 <h3>{{ .Project.Name }} | {{ .Script.Name }}</h3>
                 <p>{{ .Script.Description }}</p>
@@ -73,6 +88,34 @@
                     <div class="mb-3">
                         <label for="timeout" class="form-label">Timeout Seconds</label>
                         <input type="number" class="form-control" id="timeout" name="timeout" value="{{ .Script.TimeoutSeconds }}">
+                    </div>
+                    <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" name="scheduleEnabled" type="checkbox" id="scheduleEnabled" {{ if .Script.ScheduleEnabled }}checked{{ end }}>
+                                <label class="form-check-label" for="scheduleEnabled">Schedule Enabled</label>
+                            </div>
+                    </div>
+                        <div class="mb-3">
+                            <label for="schedule" class="form-label">Cron Schedule</label>
+                            <input type="text" class="form-control" name="schedule" id="schedule" {{ if .Script.ScheduleCron }}value="{{ .Script.ScheduleCron }}"{{ else }}placeholder="45 23 * * 6"{{ end }} aria-label="schedule">
+                        </div>
+                    <div class="mb-3">
+                        <label for="successNotification" class="form-label">Success Notification</label>
+                        <select class="form-select" name="successNotification" id="successNotification" aria-label="successNotification">
+                            <option value="0">Don't Notify</option>
+                            {{ range .Channels }}
+                                <option value="{{ .ID }}" {{ if eq .ID $.SelectedSuccessNotificationChannel }}selected{{ end }}>{{ .Name }} ({{ .Type }})</option>
+                            {{ end }}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="failureNotification" class="form-label">Failure Notification</label>
+                        <select class="form-select" name="failureNotification" id="failureNotification" aria-label="failureNotification">
+                            <option value="0">Don't Notify</option>
+                            {{ range .Channels }}
+                                <option value="{{ .ID }}" {{ if eq .ID $.SelectedFailureNotificationChannel }}selected{{ end }}>{{ .Name }} ({{ .Type }})</option>
+                            {{ end }}
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="params" class="form-label">Options</label>
@@ -258,6 +301,34 @@
                     <div class="mb-3">
                         <label for="timeout" class="form-label">Timeout Seconds</label>
                         <input type="number" class="form-control" id="timeout" name="timeout" value="300">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" name="scheduleEnabled" type="checkbox" id="scheduleEnabled">
+                            <label class="form-check-label" for="scheduleEnabled">Schedule Enabled</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="schedule" class="form-label">Cron Schedule</label>
+                        <input type="text" class="form-control" name="schedule" id="schedule" placeholder="45 23 * * 6" aria-label="schedule">
+                    </div>
+                    <div class="mb-3">
+                        <label for="successNotification" class="form-label">Success Notification</label>
+                        <select class="form-select" name="successNotification" id="successNotification" aria-label="successNotification">
+                            <option value="0">Don't Notify</option>
+                            {{ range .Channels }}
+                                <option value="{{ .ID }}">{{ .Name }} ({{ .Type }})</option>
+                            {{ end }}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="failureNotification" class="form-label">Failure Notification</label>
+                        <select class="form-select" name="failureNotification" id="failureNotification" aria-label="failureNotification">
+                            <option value="0">Don't Notify</option>
+                            {{ range .Channels }}
+                                <option value="{{ .ID }}">{{ .Name }} ({{ .Type }})</option>
+                            {{ end }}
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="params" class="form-label">Options</label>

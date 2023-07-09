@@ -311,8 +311,16 @@ func renderCreateScriptPage(ctx context.Context, db *ent.Client) echo.HandlerFun
 				"Message": err.Error(),
 			})
 		}
+		notificationChannelsAvailable, err := getNotificationChannels(ctx, db)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": "Failed to get notification channels",
+			})
+		}
 		return c.Render(http.StatusOK, "create_script", map[string]interface{}{
-			"Project": project,
+			"Project":  project,
+			"Channels": notificationChannelsAvailable,
 		})
 	}
 }
@@ -364,12 +372,30 @@ func renderEditScriptPage(ctx context.Context, db *ent.Client) echo.HandlerFunc 
 			optionLines = len(strings.Split(prettyParams, "\n"))
 		}
 		numberOfLines := len(lines)
+		notificationChannelsAvailable, err := getNotificationChannels(ctx, db)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": "Failed to get notification channels",
+			})
+		}
+		selectedFailureNotificationChannel := 0
+		selectedSuccessNotificationChannel := 0
+		if script.FailureNotificationID != nil {
+			selectedFailureNotificationChannel = *script.FailureNotificationID
+		}
+		if script.SuccessNotificationID != nil {
+			selectedSuccessNotificationChannel = *script.SuccessNotificationID
+		}
 		return c.Render(http.StatusOK, "edit_script", map[string]interface{}{
-			"Script":       script,
-			"ScriptParams": prettyParams,
-			"Project":      project,
-			"Lines":        numberOfLines,
-			"OptionsLines": optionLines,
+			"Script":                             script,
+			"ScriptParams":                       prettyParams,
+			"Project":                            project,
+			"Lines":                              numberOfLines,
+			"OptionsLines":                       optionLines,
+			"Channels":                           notificationChannelsAvailable,
+			"SelectedSuccessNotificationChannel": selectedSuccessNotificationChannel,
+			"SelectedFailureNotificationChannel": selectedFailureNotificationChannel,
 		})
 	}
 }
@@ -550,6 +576,35 @@ func renderEditUsersPage(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 		return c.Render(http.StatusOK, "edit_users", map[string]interface{}{
 			"User": user,
 		})
+	}
+}
+
+func renderNotificationsPage(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		notifications, err := getNotificationChannels(ctx, db)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{"Message": err.Error()})
+		}
+		return c.Render(http.StatusOK, "notifications", map[string]interface{}{
+			"Notifications": notifications,
+		})
+	}
+}
+
+func renderCreateNotificationPage(ctx context.Context) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		notificationType := c.Param("type")
+		switch notificationType {
+		case "slack":
+			return c.Render(http.StatusOK, "create_slack_notification", nil)
+		case "email":
+			return c.Render(http.StatusOK, "create_email_notification", nil)
+		case "webhook":
+			return c.Render(http.StatusOK, "create_webhook_notification", nil)
+		default:
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{"Message": "Invalid notification type"})
+		}
 	}
 }
 

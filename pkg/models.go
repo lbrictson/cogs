@@ -25,15 +25,19 @@ type ProjectModel struct {
 }
 
 type ScriptModel struct {
-	ID             int       `json:"id"`
-	Name           string    `json:"name"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
-	Description    string    `json:"description"`
-	ProjectID      int       `json:"project_id"`
-	TimeoutSeconds int       `json:"timeout_seconds"`
-	Parameters     []schema.ScriptInputOptions
-	Script         string `json:"script"`
+	ID                    int       `json:"id"`
+	Name                  string    `json:"name"`
+	CreatedAt             time.Time `json:"created_at"`
+	UpdatedAt             time.Time `json:"updated_at"`
+	Description           string    `json:"description"`
+	ProjectID             int       `json:"project_id"`
+	TimeoutSeconds        int       `json:"timeout_seconds"`
+	Parameters            []schema.ScriptInputOptions
+	Script                string `json:"script"`
+	SuccessNotificationID *int   `json:"success_notification_id"`
+	FailureNotificationID *int   `json:"failure_notification_id"`
+	ScheduleEnabled       bool   `json:"schedule_enabled"`
+	ScheduleCron          string `json:"schedule_cron"`
 }
 
 type AccessModel struct {
@@ -102,4 +106,16 @@ func (s *ScriptStatsModel) HumanizeLastRun() string {
 
 func (s *ScriptStatsModel) FormatTimeLastRun() string {
 	return s.LastRun.Format("2006-01-02@15:04")
+}
+
+type NotificationChannelModel struct {
+	ID            int                  `json:"id"`
+	CreatedAt     time.Time            `json:"created_at"`
+	UpdatedAt     time.Time            `json:"updated_at"`
+	Name          string               `json:"name"`
+	Type          string               `json:"type"`
+	SlackConfig   schema.SlackConfig   `json:"slack_config"`
+	EmailConfig   schema.EmailConfig   `json:"email_config"`
+	WebhookConfig schema.WebhookConfig `json:"webhook_config"`
+	Enabled       bool                 `json:"enabled"`
 }

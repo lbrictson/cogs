@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/lbrictson/cogs/ent/access"
 	"github.com/lbrictson/cogs/ent/history"
+	"github.com/lbrictson/cogs/ent/notificationchannel"
 	"github.com/lbrictson/cogs/ent/project"
 	"github.com/lbrictson/cogs/ent/script"
 	"github.com/lbrictson/cogs/ent/scriptstats"
@@ -79,13 +80,14 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			access.Table:      access.ValidColumn,
-			history.Table:     history.ValidColumn,
-			project.Table:     project.ValidColumn,
-			script.Table:      script.ValidColumn,
-			scriptstats.Table: scriptstats.ValidColumn,
-			secret.Table:      secret.ValidColumn,
-			user.Table:        user.ValidColumn,
+			access.Table:              access.ValidColumn,
+			history.Table:             history.ValidColumn,
+			notificationchannel.Table: notificationchannel.ValidColumn,
+			project.Table:             project.ValidColumn,
+			script.Table:              script.ValidColumn,
+			scriptstats.Table:         scriptstats.ValidColumn,
+			secret.Table:              secret.ValidColumn,
+			user.Table:                user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

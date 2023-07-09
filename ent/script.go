@@ -34,8 +34,16 @@ type Script struct {
 	// ProjectID holds the value of the "project_id" field.
 	ProjectID int `json:"project_id,omitempty"`
 	// Parameters holds the value of the "parameters" field.
-	Parameters   []schema.ScriptInputOptions `json:"parameters,omitempty"`
-	selectValues sql.SelectValues
+	Parameters []schema.ScriptInputOptions `json:"parameters,omitempty"`
+	// ScheduleEnabled holds the value of the "schedule_enabled" field.
+	ScheduleEnabled bool `json:"schedule_enabled,omitempty"`
+	// ScheduleCron holds the value of the "schedule_cron" field.
+	ScheduleCron string `json:"schedule_cron,omitempty"`
+	// SuccessNotificationChannelID holds the value of the "success_notification_channel_id" field.
+	SuccessNotificationChannelID *int `json:"success_notification_channel_id,omitempty"`
+	// FailureNotificationChannelID holds the value of the "failure_notification_channel_id" field.
+	FailureNotificationChannelID *int `json:"failure_notification_channel_id,omitempty"`
+	selectValues                 sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -45,9 +53,11 @@ func (*Script) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case script.FieldParameters:
 			values[i] = new([]byte)
-		case script.FieldID, script.FieldTimeoutSeconds, script.FieldProjectID:
+		case script.FieldScheduleEnabled:
+			values[i] = new(sql.NullBool)
+		case script.FieldID, script.FieldTimeoutSeconds, script.FieldProjectID, script.FieldSuccessNotificationChannelID, script.FieldFailureNotificationChannelID:
 			values[i] = new(sql.NullInt64)
-		case script.FieldName, script.FieldDescription, script.FieldScript:
+		case script.FieldName, script.FieldDescription, script.FieldScript, script.FieldScheduleCron:
 			values[i] = new(sql.NullString)
 		case script.FieldCreatedAt, script.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -122,6 +132,32 @@ func (s *Script) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field parameters: %w", err)
 				}
 			}
+		case script.FieldScheduleEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field schedule_enabled", values[i])
+			} else if value.Valid {
+				s.ScheduleEnabled = value.Bool
+			}
+		case script.FieldScheduleCron:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field schedule_cron", values[i])
+			} else if value.Valid {
+				s.ScheduleCron = value.String
+			}
+		case script.FieldSuccessNotificationChannelID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field success_notification_channel_id", values[i])
+			} else if value.Valid {
+				s.SuccessNotificationChannelID = new(int)
+				*s.SuccessNotificationChannelID = int(value.Int64)
+			}
+		case script.FieldFailureNotificationChannelID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field failure_notification_channel_id", values[i])
+			} else if value.Valid {
+				s.FailureNotificationChannelID = new(int)
+				*s.FailureNotificationChannelID = int(value.Int64)
+			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
 		}
@@ -181,6 +217,22 @@ func (s *Script) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("parameters=")
 	builder.WriteString(fmt.Sprintf("%v", s.Parameters))
+	builder.WriteString(", ")
+	builder.WriteString("schedule_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", s.ScheduleEnabled))
+	builder.WriteString(", ")
+	builder.WriteString("schedule_cron=")
+	builder.WriteString(s.ScheduleCron)
+	builder.WriteString(", ")
+	if v := s.SuccessNotificationChannelID; v != nil {
+		builder.WriteString("success_notification_channel_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := s.FailureNotificationChannelID; v != nil {
+		builder.WriteString("failure_notification_channel_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

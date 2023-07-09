@@ -3,6 +3,8 @@ package pkg
 import (
 	"flag"
 	"github.com/lbrictson/cogs/ent"
+	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -23,18 +25,50 @@ func NewConfig() *Config {
 	flag.Parse()
 	dbConn, err := NewDatabaseConnection(NewDatabaseConnectionInput{
 		InMemory: false,
-		Location: *dataDir,
+		Location: checkEnvVarForStringValue("COGS_DATA", *dataDir),
 	})
 	if err != nil {
 		panic(err)
 	}
 	dataDirectory = *dataDir
 	return &Config{
-		DataDirectory: *dataDir,
-		Port:          *port,
+		DataDirectory: checkEnvVarForStringValue("COGS_DATA", *dataDir),
+		Port:          checkEnvVarForIntValue("COGS_PORT", *port),
 		DBConnection:  dbConn,
-		LogLevel:      *level,
-		LogFormat:     *format,
-		DevMode:       *devMode,
+		LogLevel:      checkEnvVarForStringValue("COGS_LOG_LEVEL", *level),
+		LogFormat:     checkEnvVarForStringValue("COGS_LOG_FORMAT", *format),
+		DevMode:       checkEnvVarForBoolValue("COGS_DEV_MODE", *devMode),
 	}
+}
+
+func checkEnvVarForStringValue(envVar string, defaultValue string) string {
+	e := os.Getenv(envVar)
+	if e != "" {
+		return e
+	}
+	return defaultValue
+}
+
+func checkEnvVarForIntValue(envVar string, defaultValue int) int {
+	e := os.Getenv(envVar)
+	if e != "" {
+		i, castErr := strconv.Atoi(e)
+		if castErr != nil {
+			return defaultValue
+		}
+		return i
+	}
+	return defaultValue
+}
+
+func checkEnvVarForBoolValue(envVar string, defaultValue bool) bool {
+	e := os.Getenv(envVar)
+	if e != "" {
+		b, castErr := strconv.ParseBool(e)
+		if castErr != nil {
+			return defaultValue
+		}
+		return b
+	}
+	return defaultValue
 }

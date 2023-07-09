@@ -101,6 +101,62 @@ func (sc *ScriptCreate) SetParameters(sio []schema.ScriptInputOptions) *ScriptCr
 	return sc
 }
 
+// SetScheduleEnabled sets the "schedule_enabled" field.
+func (sc *ScriptCreate) SetScheduleEnabled(b bool) *ScriptCreate {
+	sc.mutation.SetScheduleEnabled(b)
+	return sc
+}
+
+// SetNillableScheduleEnabled sets the "schedule_enabled" field if the given value is not nil.
+func (sc *ScriptCreate) SetNillableScheduleEnabled(b *bool) *ScriptCreate {
+	if b != nil {
+		sc.SetScheduleEnabled(*b)
+	}
+	return sc
+}
+
+// SetScheduleCron sets the "schedule_cron" field.
+func (sc *ScriptCreate) SetScheduleCron(s string) *ScriptCreate {
+	sc.mutation.SetScheduleCron(s)
+	return sc
+}
+
+// SetNillableScheduleCron sets the "schedule_cron" field if the given value is not nil.
+func (sc *ScriptCreate) SetNillableScheduleCron(s *string) *ScriptCreate {
+	if s != nil {
+		sc.SetScheduleCron(*s)
+	}
+	return sc
+}
+
+// SetSuccessNotificationChannelID sets the "success_notification_channel_id" field.
+func (sc *ScriptCreate) SetSuccessNotificationChannelID(i int) *ScriptCreate {
+	sc.mutation.SetSuccessNotificationChannelID(i)
+	return sc
+}
+
+// SetNillableSuccessNotificationChannelID sets the "success_notification_channel_id" field if the given value is not nil.
+func (sc *ScriptCreate) SetNillableSuccessNotificationChannelID(i *int) *ScriptCreate {
+	if i != nil {
+		sc.SetSuccessNotificationChannelID(*i)
+	}
+	return sc
+}
+
+// SetFailureNotificationChannelID sets the "failure_notification_channel_id" field.
+func (sc *ScriptCreate) SetFailureNotificationChannelID(i int) *ScriptCreate {
+	sc.mutation.SetFailureNotificationChannelID(i)
+	return sc
+}
+
+// SetNillableFailureNotificationChannelID sets the "failure_notification_channel_id" field if the given value is not nil.
+func (sc *ScriptCreate) SetNillableFailureNotificationChannelID(i *int) *ScriptCreate {
+	if i != nil {
+		sc.SetFailureNotificationChannelID(*i)
+	}
+	return sc
+}
+
 // Mutation returns the ScriptMutation object of the builder.
 func (sc *ScriptCreate) Mutation() *ScriptMutation {
 	return sc.mutation
@@ -148,6 +204,10 @@ func (sc *ScriptCreate) defaults() {
 		v := script.DefaultTimeoutSeconds
 		sc.mutation.SetTimeoutSeconds(v)
 	}
+	if _, ok := sc.mutation.ScheduleEnabled(); !ok {
+		v := script.DefaultScheduleEnabled
+		sc.mutation.SetScheduleEnabled(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -169,6 +229,9 @@ func (sc *ScriptCreate) check() error {
 	}
 	if _, ok := sc.mutation.ProjectID(); !ok {
 		return &ValidationError{Name: "project_id", err: errors.New(`ent: missing required field "Script.project_id"`)}
+	}
+	if _, ok := sc.mutation.ScheduleEnabled(); !ok {
+		return &ValidationError{Name: "schedule_enabled", err: errors.New(`ent: missing required field "Script.schedule_enabled"`)}
 	}
 	return nil
 }
@@ -227,6 +290,22 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Parameters(); ok {
 		_spec.SetField(script.FieldParameters, field.TypeJSON, value)
 		_node.Parameters = value
+	}
+	if value, ok := sc.mutation.ScheduleEnabled(); ok {
+		_spec.SetField(script.FieldScheduleEnabled, field.TypeBool, value)
+		_node.ScheduleEnabled = value
+	}
+	if value, ok := sc.mutation.ScheduleCron(); ok {
+		_spec.SetField(script.FieldScheduleCron, field.TypeString, value)
+		_node.ScheduleCron = value
+	}
+	if value, ok := sc.mutation.SuccessNotificationChannelID(); ok {
+		_spec.SetField(script.FieldSuccessNotificationChannelID, field.TypeInt, value)
+		_node.SuccessNotificationChannelID = &value
+	}
+	if value, ok := sc.mutation.FailureNotificationChannelID(); ok {
+		_spec.SetField(script.FieldFailureNotificationChannelID, field.TypeInt, value)
+		_node.FailureNotificationChannelID = &value
 	}
 	return _node, _spec
 }

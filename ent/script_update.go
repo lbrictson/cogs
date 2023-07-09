@@ -120,6 +120,94 @@ func (su *ScriptUpdate) ClearParameters() *ScriptUpdate {
 	return su
 }
 
+// SetScheduleEnabled sets the "schedule_enabled" field.
+func (su *ScriptUpdate) SetScheduleEnabled(b bool) *ScriptUpdate {
+	su.mutation.SetScheduleEnabled(b)
+	return su
+}
+
+// SetNillableScheduleEnabled sets the "schedule_enabled" field if the given value is not nil.
+func (su *ScriptUpdate) SetNillableScheduleEnabled(b *bool) *ScriptUpdate {
+	if b != nil {
+		su.SetScheduleEnabled(*b)
+	}
+	return su
+}
+
+// SetScheduleCron sets the "schedule_cron" field.
+func (su *ScriptUpdate) SetScheduleCron(s string) *ScriptUpdate {
+	su.mutation.SetScheduleCron(s)
+	return su
+}
+
+// SetNillableScheduleCron sets the "schedule_cron" field if the given value is not nil.
+func (su *ScriptUpdate) SetNillableScheduleCron(s *string) *ScriptUpdate {
+	if s != nil {
+		su.SetScheduleCron(*s)
+	}
+	return su
+}
+
+// ClearScheduleCron clears the value of the "schedule_cron" field.
+func (su *ScriptUpdate) ClearScheduleCron() *ScriptUpdate {
+	su.mutation.ClearScheduleCron()
+	return su
+}
+
+// SetSuccessNotificationChannelID sets the "success_notification_channel_id" field.
+func (su *ScriptUpdate) SetSuccessNotificationChannelID(i int) *ScriptUpdate {
+	su.mutation.ResetSuccessNotificationChannelID()
+	su.mutation.SetSuccessNotificationChannelID(i)
+	return su
+}
+
+// SetNillableSuccessNotificationChannelID sets the "success_notification_channel_id" field if the given value is not nil.
+func (su *ScriptUpdate) SetNillableSuccessNotificationChannelID(i *int) *ScriptUpdate {
+	if i != nil {
+		su.SetSuccessNotificationChannelID(*i)
+	}
+	return su
+}
+
+// AddSuccessNotificationChannelID adds i to the "success_notification_channel_id" field.
+func (su *ScriptUpdate) AddSuccessNotificationChannelID(i int) *ScriptUpdate {
+	su.mutation.AddSuccessNotificationChannelID(i)
+	return su
+}
+
+// ClearSuccessNotificationChannelID clears the value of the "success_notification_channel_id" field.
+func (su *ScriptUpdate) ClearSuccessNotificationChannelID() *ScriptUpdate {
+	su.mutation.ClearSuccessNotificationChannelID()
+	return su
+}
+
+// SetFailureNotificationChannelID sets the "failure_notification_channel_id" field.
+func (su *ScriptUpdate) SetFailureNotificationChannelID(i int) *ScriptUpdate {
+	su.mutation.ResetFailureNotificationChannelID()
+	su.mutation.SetFailureNotificationChannelID(i)
+	return su
+}
+
+// SetNillableFailureNotificationChannelID sets the "failure_notification_channel_id" field if the given value is not nil.
+func (su *ScriptUpdate) SetNillableFailureNotificationChannelID(i *int) *ScriptUpdate {
+	if i != nil {
+		su.SetFailureNotificationChannelID(*i)
+	}
+	return su
+}
+
+// AddFailureNotificationChannelID adds i to the "failure_notification_channel_id" field.
+func (su *ScriptUpdate) AddFailureNotificationChannelID(i int) *ScriptUpdate {
+	su.mutation.AddFailureNotificationChannelID(i)
+	return su
+}
+
+// ClearFailureNotificationChannelID clears the value of the "failure_notification_channel_id" field.
+func (su *ScriptUpdate) ClearFailureNotificationChannelID() *ScriptUpdate {
+	su.mutation.ClearFailureNotificationChannelID()
+	return su
+}
+
 // Mutation returns the ScriptMutation object of the builder.
 func (su *ScriptUpdate) Mutation() *ScriptMutation {
 	return su.mutation
@@ -207,6 +295,33 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.ParametersCleared() {
 		_spec.ClearField(script.FieldParameters, field.TypeJSON)
+	}
+	if value, ok := su.mutation.ScheduleEnabled(); ok {
+		_spec.SetField(script.FieldScheduleEnabled, field.TypeBool, value)
+	}
+	if value, ok := su.mutation.ScheduleCron(); ok {
+		_spec.SetField(script.FieldScheduleCron, field.TypeString, value)
+	}
+	if su.mutation.ScheduleCronCleared() {
+		_spec.ClearField(script.FieldScheduleCron, field.TypeString)
+	}
+	if value, ok := su.mutation.SuccessNotificationChannelID(); ok {
+		_spec.SetField(script.FieldSuccessNotificationChannelID, field.TypeInt, value)
+	}
+	if value, ok := su.mutation.AddedSuccessNotificationChannelID(); ok {
+		_spec.AddField(script.FieldSuccessNotificationChannelID, field.TypeInt, value)
+	}
+	if su.mutation.SuccessNotificationChannelIDCleared() {
+		_spec.ClearField(script.FieldSuccessNotificationChannelID, field.TypeInt)
+	}
+	if value, ok := su.mutation.FailureNotificationChannelID(); ok {
+		_spec.SetField(script.FieldFailureNotificationChannelID, field.TypeInt, value)
+	}
+	if value, ok := su.mutation.AddedFailureNotificationChannelID(); ok {
+		_spec.AddField(script.FieldFailureNotificationChannelID, field.TypeInt, value)
+	}
+	if su.mutation.FailureNotificationChannelIDCleared() {
+		_spec.ClearField(script.FieldFailureNotificationChannelID, field.TypeInt)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -315,6 +430,94 @@ func (suo *ScriptUpdateOne) AppendParameters(sio []schema.ScriptInputOptions) *S
 // ClearParameters clears the value of the "parameters" field.
 func (suo *ScriptUpdateOne) ClearParameters() *ScriptUpdateOne {
 	suo.mutation.ClearParameters()
+	return suo
+}
+
+// SetScheduleEnabled sets the "schedule_enabled" field.
+func (suo *ScriptUpdateOne) SetScheduleEnabled(b bool) *ScriptUpdateOne {
+	suo.mutation.SetScheduleEnabled(b)
+	return suo
+}
+
+// SetNillableScheduleEnabled sets the "schedule_enabled" field if the given value is not nil.
+func (suo *ScriptUpdateOne) SetNillableScheduleEnabled(b *bool) *ScriptUpdateOne {
+	if b != nil {
+		suo.SetScheduleEnabled(*b)
+	}
+	return suo
+}
+
+// SetScheduleCron sets the "schedule_cron" field.
+func (suo *ScriptUpdateOne) SetScheduleCron(s string) *ScriptUpdateOne {
+	suo.mutation.SetScheduleCron(s)
+	return suo
+}
+
+// SetNillableScheduleCron sets the "schedule_cron" field if the given value is not nil.
+func (suo *ScriptUpdateOne) SetNillableScheduleCron(s *string) *ScriptUpdateOne {
+	if s != nil {
+		suo.SetScheduleCron(*s)
+	}
+	return suo
+}
+
+// ClearScheduleCron clears the value of the "schedule_cron" field.
+func (suo *ScriptUpdateOne) ClearScheduleCron() *ScriptUpdateOne {
+	suo.mutation.ClearScheduleCron()
+	return suo
+}
+
+// SetSuccessNotificationChannelID sets the "success_notification_channel_id" field.
+func (suo *ScriptUpdateOne) SetSuccessNotificationChannelID(i int) *ScriptUpdateOne {
+	suo.mutation.ResetSuccessNotificationChannelID()
+	suo.mutation.SetSuccessNotificationChannelID(i)
+	return suo
+}
+
+// SetNillableSuccessNotificationChannelID sets the "success_notification_channel_id" field if the given value is not nil.
+func (suo *ScriptUpdateOne) SetNillableSuccessNotificationChannelID(i *int) *ScriptUpdateOne {
+	if i != nil {
+		suo.SetSuccessNotificationChannelID(*i)
+	}
+	return suo
+}
+
+// AddSuccessNotificationChannelID adds i to the "success_notification_channel_id" field.
+func (suo *ScriptUpdateOne) AddSuccessNotificationChannelID(i int) *ScriptUpdateOne {
+	suo.mutation.AddSuccessNotificationChannelID(i)
+	return suo
+}
+
+// ClearSuccessNotificationChannelID clears the value of the "success_notification_channel_id" field.
+func (suo *ScriptUpdateOne) ClearSuccessNotificationChannelID() *ScriptUpdateOne {
+	suo.mutation.ClearSuccessNotificationChannelID()
+	return suo
+}
+
+// SetFailureNotificationChannelID sets the "failure_notification_channel_id" field.
+func (suo *ScriptUpdateOne) SetFailureNotificationChannelID(i int) *ScriptUpdateOne {
+	suo.mutation.ResetFailureNotificationChannelID()
+	suo.mutation.SetFailureNotificationChannelID(i)
+	return suo
+}
+
+// SetNillableFailureNotificationChannelID sets the "failure_notification_channel_id" field if the given value is not nil.
+func (suo *ScriptUpdateOne) SetNillableFailureNotificationChannelID(i *int) *ScriptUpdateOne {
+	if i != nil {
+		suo.SetFailureNotificationChannelID(*i)
+	}
+	return suo
+}
+
+// AddFailureNotificationChannelID adds i to the "failure_notification_channel_id" field.
+func (suo *ScriptUpdateOne) AddFailureNotificationChannelID(i int) *ScriptUpdateOne {
+	suo.mutation.AddFailureNotificationChannelID(i)
+	return suo
+}
+
+// ClearFailureNotificationChannelID clears the value of the "failure_notification_channel_id" field.
+func (suo *ScriptUpdateOne) ClearFailureNotificationChannelID() *ScriptUpdateOne {
+	suo.mutation.ClearFailureNotificationChannelID()
 	return suo
 }
 
@@ -435,6 +638,33 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 	}
 	if suo.mutation.ParametersCleared() {
 		_spec.ClearField(script.FieldParameters, field.TypeJSON)
+	}
+	if value, ok := suo.mutation.ScheduleEnabled(); ok {
+		_spec.SetField(script.FieldScheduleEnabled, field.TypeBool, value)
+	}
+	if value, ok := suo.mutation.ScheduleCron(); ok {
+		_spec.SetField(script.FieldScheduleCron, field.TypeString, value)
+	}
+	if suo.mutation.ScheduleCronCleared() {
+		_spec.ClearField(script.FieldScheduleCron, field.TypeString)
+	}
+	if value, ok := suo.mutation.SuccessNotificationChannelID(); ok {
+		_spec.SetField(script.FieldSuccessNotificationChannelID, field.TypeInt, value)
+	}
+	if value, ok := suo.mutation.AddedSuccessNotificationChannelID(); ok {
+		_spec.AddField(script.FieldSuccessNotificationChannelID, field.TypeInt, value)
+	}
+	if suo.mutation.SuccessNotificationChannelIDCleared() {
+		_spec.ClearField(script.FieldSuccessNotificationChannelID, field.TypeInt)
+	}
+	if value, ok := suo.mutation.FailureNotificationChannelID(); ok {
+		_spec.SetField(script.FieldFailureNotificationChannelID, field.TypeInt, value)
+	}
+	if value, ok := suo.mutation.AddedFailureNotificationChannelID(); ok {
+		_spec.AddField(script.FieldFailureNotificationChannelID, field.TypeInt, value)
+	}
+	if suo.mutation.FailureNotificationChannelIDCleared() {
+		_spec.ClearField(script.FieldFailureNotificationChannelID, field.TypeInt)
 	}
 	_node = &Script{config: suo.config}
 	_spec.Assign = _node.assignValues
