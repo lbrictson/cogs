@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/lbrictson/cogs/ent"
 	"os"
@@ -11,11 +12,14 @@ import (
 )
 
 type RunScriptInput struct {
-	Script    ScriptModel
-	Caller    string
-	Trigger   string
-	Args      map[string]string
-	ProjectID int
+	Script         ScriptModel
+	Caller         string
+	Trigger        string
+	Args           map[string]string
+	ProjectID      int
+	ProjectName    string
+	SuccessChannel *NotificationChannelModel
+	FailureChannel *NotificationChannelModel
 }
 
 func runScript(ctx context.Context, db *ent.Client, input RunScriptInput) string {
@@ -143,5 +147,32 @@ func doScriptRun(ctx context.Context, db *ent.Client, input RunScriptInput, runI
 		updateStatsInput.IncrementError = true
 	}
 	updateScriptStats(ctx, db, updateStatsInput)
+	if runOutcomeSuccess {
+		if input.SuccessChannel != nil {
+			switch input.SuccessChannel.Type {
+			case "slack":
+				notifySlack(ctx, SlackNotifyInput{
+					ProjectName: input.ProjectName,
+					ScriptName:  input.Script.Name,
+					HistoryLink: fmt.Sprintf("%v/projects/%v/%v/history/%v",
+						globalCallbackURL, input.ProjectID, input.Script.ID, historyID),
+					Success: true,
+				}, input.SuccessChannel.SlackConfig.WebhookURL)
+			}
+		}
+	} else {
+		if input.FailureChannel != nil {
+			switch input.FailureChannel.Type {
+			case "slack":
+				notifySlack(ctx, SlackNotifyInput{
+					ProjectName: input.ProjectName,
+					ScriptName:  input.Script.Name,
+					HistoryLink: fmt.Sprintf("%v/projects/%v/%v/history/%v",
+						globalCallbackURL, input.ProjectID, input.Script.ID, historyID),
+					Success: false,
+				}, input.FailureChannel.SlackConfig.WebhookURL)
+			}
+		}
+	}
 	return
 }

@@ -409,13 +409,43 @@ func formRunScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 		for _, x := range s.Parameters {
 			args[x.Name] = c.FormValue(x.Name)
 		}
-		runScript(ctx, db, RunScriptInput{
-			Script:    s,
-			Caller:    c.Get("email").(string),
-			Trigger:   "webUI",
-			Args:      args,
-			ProjectID: s.ProjectID,
-		})
+		// Get the project
+		p, err := getProjectByID(ctx, db, s.ProjectID)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		runnerInput := RunScriptInput{
+			Script:      s,
+			Caller:      c.Get("email").(string),
+			Trigger:     "webUI",
+			Args:        args,
+			ProjectID:   s.ProjectID,
+			ProjectName: p.Name,
+		}
+		if s.SuccessNotificationID != nil {
+			sNotify, err := getNotificationChannelByID(ctx, db, *s.SuccessNotificationID)
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			runnerInput.SuccessChannel = &sNotify
+		}
+		if s.FailureNotificationID != nil {
+			fNotify, err := getNotificationChannelByID(ctx, db, *s.FailureNotificationID)
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			runnerInput.FailureChannel = &fNotify
+		}
+		runScript(ctx, db, runnerInput)
 		LogFromCtx(ctx).Info("ran script", "script", scriptID, "user", userFromEchoContext(c))
 		return c.Redirect(http.StatusFound, "/projects/"+c.Param("projectID")+"/"+scriptID+"/history")
 	})
@@ -593,5 +623,100 @@ func formCreateNotificationChannel(ctx context.Context, db *ent.Client) echo.Han
 				"Message": "unknown notification channel type",
 			})
 		}
+	})
+}
+
+func formUpdateNotificationChannel(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return echo.HandlerFunc(func(c echo.Context) error {
+		id := c.Param("id")
+		// convert to int
+		i, err := strconv.Atoi(id)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		notificationChannel, err := getNotificationChannelByID(ctx, db, i)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		switch notificationChannel.Type {
+		case "slack":
+			type FormData struct {
+				Name string `form:"name"`
+				URL  string `form:"url"`
+			}
+			var data FormData
+			if err := c.Bind(&data); err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			_, err = updateNotificationChannel(ctx, db, notificationChannel.ID, UpdateNotificationChannelInput{
+				Name:        &data.Name,
+				SlackConfig: &schema.SlackConfig{WebhookURL: data.URL},
+			})
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+		case "email":
+			type FormData struct {
+				Name  string `form:"name"`
+				Email string `form:"email"`
+			}
+			var data FormData
+			if err := c.Bind(&data); err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			_, err = updateNotificationChannel(ctx, db, notificationChannel.ID, UpdateNotificationChannelInput{
+				Name:        &data.Name,
+				EmailConfig: &schema.EmailConfig{To: data.Email},
+			})
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+		case "webhook":
+			type FormData struct {
+				Name string `form:"name"`
+				URL  string `form:"url"`
+			}
+			var data FormData
+			if err := c.Bind(&data); err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+			_, err = updateNotificationChannel(ctx, db, notificationChannel.ID, UpdateNotificationChannelInput{
+				Name:          &data.Name,
+				WebhookConfig: &schema.WebhookConfig{URL: data.URL},
+			})
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+					"Message": err.Error(),
+				})
+			}
+		default:
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": "unknown notification channel type",
+			})
+		}
+		LogFromCtx(ctx).Info("updated notification channel", "name", notificationChannel.Name, "user", userFromEchoContext(c))
+		return c.Redirect(http.StatusFound, "/notifications")
 	})
 }

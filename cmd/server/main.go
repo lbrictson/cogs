@@ -36,9 +36,10 @@ func main() {
 	}
 	logger.Info("starting cogs server")
 	s := pkg.NewServer(pkg.NewServerInput{
-		Port:    c.Port,
-		DB:      c.DBConnection,
-		DevMode: c.DevMode,
+		Port:        c.Port,
+		DB:          c.DBConnection,
+		DevMode:     c.DevMode,
+		CallbackURL: c.CallbackURL,
 	})
 	s.Run(ctx)
 }

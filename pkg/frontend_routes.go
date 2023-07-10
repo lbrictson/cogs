@@ -608,6 +608,39 @@ func renderCreateNotificationPage(ctx context.Context) echo.HandlerFunc {
 	}
 }
 
+func renderEditNotificationPage(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("id")
+		// convert to int
+		i, err := strconv.Atoi(id)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{"Message": err.Error()})
+		}
+		n, err := getNotificationChannelByID(ctx, db, i)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{"Message": err.Error()})
+		}
+		switch n.Type {
+		case "slack":
+			return c.Render(http.StatusOK, "edit_slack_notification", map[string]interface{}{
+				"Channel": n,
+			})
+		case "email":
+			return c.Render(http.StatusOK, "edit_email_notification", map[string]interface{}{
+				"Channel": n,
+			})
+		case "webhook":
+			return c.Render(http.StatusOK, "edit_webhook_notification", map[string]interface{}{
+				"Channel": n,
+			})
+		default:
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{"Message": "Invalid notification type"})
+		}
+	}
+}
+
 func renderLoginPage(ctx context.Context) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return c.Render(http.StatusOK, "login", nil)

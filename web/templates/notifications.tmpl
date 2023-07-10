@@ -131,3 +131,117 @@
     </div>
     {{ template "footer" . }}
 {{ end }}
+
+{{ define "edit_slack_notification" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row" id="channelHolder">
+            <div class="col-4">
+                <div class="list-group">
+
+                </div>
+            </div>
+            <div class="col-6">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{ .Channel.Name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="url" class="form-label">Slack Webhook URL</label>
+                        <input type="text" class="form-control" id="url" name="url" required value="{{ .Channel.SlackConfig.WebhookURL }}">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Update</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action" href="/notifications">Back</a>
+                    <button class="list-group-item list-group-item-action bg-danger text-white"
+                            hx-delete="/notifications/{{ .Channel.ID }}" hx-target="#channelHolder" hx-confirm="Are you sure you wish to delete this channel?"
+                    >Delete Channel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "edit_email_notification" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row" id="channelHolder">
+            <div class="col-4">
+                <div class="list-group">
+
+                </div>
+            </div>
+            <div class="col-6">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{ .Channel.Name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required value="{{ .Channel.EmailConfig.To }}">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Update</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action" href="/notifications">Back</a>
+                    <button class="list-group-item list-group-item-action bg-danger text-white"
+                            hx-delete="/notifications/{{ .Channel.ID }}" hx-target="#channelHolder" hx-confirm="Are you sure you wish to delete this channel?"
+                    >Delete Channel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}
+
+{{ define "edit_webhook_notification" }}
+    {{ template "head" . }}
+    {{ template "navbar" . }}
+    <div class="container">
+        <div class="row" id="channelHolder">
+            <div class="col-4">
+                <div class="list-group">
+
+                </div>
+            </div>
+            <div class="col-6">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required value="{{ .Channel.Name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="url" class="form-label">URL</label>
+                        <input type="text" class="form-control" id="url" name="url" required value="{{ .Channel.WebhookConfig.URL }}">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Update</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-2">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action" href="/notifications">Back</a>
+                    <button class="list-group-item list-group-item-action bg-danger text-white"
+                            hx-delete="/notifications/{{ .Channel.ID }}" hx-target="#channelHolder" hx-confirm="Are you sure you wish to delete this channel?"
+                    >Delete Channel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ template "footer" . }}
+{{ end }}

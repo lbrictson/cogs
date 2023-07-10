@@ -72,6 +72,66 @@ func hookDeleteSecret(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 	}
 }
 
+func hookDeleteNotificationChannel(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("id")
+		// convert to int
+		i, err := strconv.Atoi(id)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		err = deleteNotificationChannel(ctx, db, i)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		// Remove the notification channel from any scripts that use it
+		allScripts, err := getScripts(ctx, db)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		none := int(0)
+		for _, script := range allScripts {
+			updateNeeded := false
+			updateContent := UpdateScriptInput{
+				SuccessNotificationChannelID: script.SuccessNotificationID,
+				FailureNotificationChannelID: script.FailureNotificationID,
+			}
+			if script.SuccessNotificationID != nil {
+				if *script.SuccessNotificationID == i {
+					updateContent.SuccessNotificationChannelID = &none
+					updateNeeded = true
+				}
+			}
+			if script.FailureNotificationID != nil {
+				if *script.FailureNotificationID == i {
+					updateContent.FailureNotificationChannelID = &none
+					updateNeeded = true
+				}
+			}
+			if updateNeeded {
+				_, err = updateScript(ctx, db, script.ID, updateContent)
+				if err != nil {
+					LogFromCtx(ctx).Error(err.Error())
+					return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+						"Message": err.Error(),
+					})
+				}
+			}
+		}
+		LogFromCtx(ctx).Info("Deleted notification channel", "id", i)
+		return c.HTML(http.StatusOK, "<h1>Deleted</h1>")
+	}
+}
+
 func logoutHook(ctx context.Context, cookieStore *sessions.CookieStore, sessionMgr *SessionManager) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		session, err := cookieStore.Get(c.Request(), sessionName)

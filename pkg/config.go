@@ -14,6 +14,7 @@ type Config struct {
 	LogLevel      string
 	LogFormat     string
 	DevMode       bool
+	CallbackURL   string
 }
 
 func NewConfig() *Config {
@@ -22,6 +23,7 @@ func NewConfig() *Config {
 	level := flag.String("level", "info", "log level")
 	format := flag.String("format", "text", "log format (text or json)")
 	devMode := flag.Bool("dev", false, "development mode")
+	callback := flag.String("callback", "http://localhost:8080", "callback url")
 	flag.Parse()
 	dbConn, err := NewDatabaseConnection(NewDatabaseConnectionInput{
 		InMemory: false,
@@ -38,6 +40,7 @@ func NewConfig() *Config {
 		LogLevel:      checkEnvVarForStringValue("COGS_LOG_LEVEL", *level),
 		LogFormat:     checkEnvVarForStringValue("COGS_LOG_FORMAT", *format),
 		DevMode:       checkEnvVarForBoolValue("COGS_DEV_MODE", *devMode),
+		CallbackURL:   checkEnvVarForStringValue("COGS_CALLBACK_URL", *callback),
 	}
 }
 

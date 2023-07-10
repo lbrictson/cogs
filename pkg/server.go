@@ -19,6 +19,7 @@ import (
 
 var sessionName = "cogs-session"
 var dataDirectory = ""
+var globalCallbackURL = ""
 
 type Server struct {
 	port           int
@@ -26,12 +27,14 @@ type Server struct {
 	sessionStore   *sessions.CookieStore
 	sessionManager *SessionManager
 	cronService    *cron.Cron
+	callbackURL    string
 }
 
 type NewServerInput struct {
-	Port    int
-	DB      *ent.Client
-	DevMode bool
+	Port        int
+	DB          *ent.Client
+	DevMode     bool
+	CallbackURL string
 }
 
 func NewServer(input NewServerInput) *Server {
@@ -46,6 +49,7 @@ func NewServer(input NewServerInput) *Server {
 		sessionStore:   sessions.NewCookieStore([]byte(cookieSecret)),
 		sessionManager: NewSessionManager(),
 		cronService:    cron.New(),
+		callbackURL:    input.CallbackURL,
 	}
 }
 
@@ -54,6 +58,7 @@ func (s *Server) Run(ctx context.Context) {
 	e := echo.New()
 	e.Renderer = mustNewRenderer()
 	e.HideBanner = true
+	globalCallbackURL = s.callbackURL
 	// Read in static assets from the mock file system
 	fSys, err := fs.Sub(web.Assets, "static")
 	if err != nil {
@@ -89,6 +94,9 @@ func (s *Server) Run(ctx context.Context) {
 	loginRequiredRoutes.GET("/notifications", renderNotificationsPage(ctx, s.db), s.globalAdminRequired)
 	loginRequiredRoutes.GET("/notifications/create/:type", renderCreateNotificationPage(ctx), s.globalAdminRequired)
 	loginRequiredRoutes.POST("/notifications/create/:type", formCreateNotificationChannel(ctx, s.db), s.globalAdminRequired)
+	loginRequiredRoutes.GET("/notifications/:id", renderEditNotificationPage(ctx, s.db), s.globalAdminRequired)
+	loginRequiredRoutes.POST("/notifications/:id", formUpdateNotificationChannel(ctx, s.db), s.globalAdminRequired)
+	loginRequiredRoutes.DELETE("/notifications/:id", hookDeleteNotificationChannel(ctx, s.db), s.globalAdminRequired)
 	// User routes
 	loginRequiredRoutes.GET("/users", renderUsersPage(ctx, s.db), s.globalAdminRequired)
 	loginRequiredRoutes.GET("/users/create", renderCreateUsersPage(ctx), s.globalAdminRequired)
