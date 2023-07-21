@@ -426,24 +426,28 @@ func formRunScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			ProjectName: p.Name,
 		}
 		if s.SuccessNotificationID != nil {
-			sNotify, err := getNotificationChannelByID(ctx, db, *s.SuccessNotificationID)
-			if err != nil {
-				LogFromCtx(ctx).Error(err.Error())
-				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
-					"Message": err.Error(),
-				})
+			if *s.SuccessNotificationID != 0 {
+				sNotify, err := getNotificationChannelByID(ctx, db, *s.SuccessNotificationID)
+				if err != nil {
+					LogFromCtx(ctx).Error(err.Error())
+					return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+						"Message": err.Error(),
+					})
+				}
+				runnerInput.SuccessChannel = &sNotify
 			}
-			runnerInput.SuccessChannel = &sNotify
 		}
 		if s.FailureNotificationID != nil {
-			fNotify, err := getNotificationChannelByID(ctx, db, *s.FailureNotificationID)
-			if err != nil {
-				LogFromCtx(ctx).Error(err.Error())
-				return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
-					"Message": err.Error(),
-				})
+			if *s.FailureNotificationID != 0 {
+				fNotify, err := getNotificationChannelByID(ctx, db, *s.FailureNotificationID)
+				if err != nil {
+					LogFromCtx(ctx).Error(err.Error())
+					return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+						"Message": err.Error(),
+					})
+				}
+				runnerInput.FailureChannel = &fNotify
 			}
-			runnerInput.FailureChannel = &fNotify
 		}
 		runScript(ctx, db, runnerInput)
 		LogFromCtx(ctx).Info("ran script", "script", scriptID, "user", userFromEchoContext(c))
