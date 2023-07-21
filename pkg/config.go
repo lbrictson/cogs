@@ -8,14 +8,15 @@ import (
 )
 
 type Config struct {
-	DataDirectory string
-	Port          int
-	DBConnection  *ent.Client
-	LogLevel      string
-	LogFormat     string
-	DevMode       bool
+	DataDirectory        string
+	Port                 int
+	DBConnection         *ent.Client
+	LogLevel             string
+	LogFormat            string
+	DevMode              bool
 	CallbackURL          string
 	HistoryRetentionDays int
+	Brand                string
 }
 
 func NewConfig() *Config {
@@ -26,6 +27,7 @@ func NewConfig() *Config {
 	devMode := flag.Bool("dev", false, "development mode")
 	callback := flag.String("callback", "http://localhost:8080", "callback url")
 	retention := flag.Int("retention", 30, "history retention in days")
+	brand := flag.String("brand", "Cogs", "brand name")
 	flag.Parse()
 	dbConn, err := NewDatabaseConnection(NewDatabaseConnectionInput{
 		InMemory: false,
@@ -36,14 +38,15 @@ func NewConfig() *Config {
 	}
 	dataDirectory = *dataDir
 	return &Config{
-		DataDirectory: checkEnvVarForStringValue("COGS_DATA", *dataDir),
-		Port:          checkEnvVarForIntValue("COGS_PORT", *port),
-		DBConnection:  dbConn,
-		LogLevel:      checkEnvVarForStringValue("COGS_LOG_LEVEL", *level),
-		LogFormat:     checkEnvVarForStringValue("COGS_LOG_FORMAT", *format),
-		DevMode:       checkEnvVarForBoolValue("COGS_DEV_MODE", *devMode),
-		CallbackURL:   checkEnvVarForStringValue("COGS_CALLBACK_URL", *callback),
+		DataDirectory:        checkEnvVarForStringValue("COGS_DATA", *dataDir),
+		Port:                 checkEnvVarForIntValue("COGS_PORT", *port),
+		DBConnection:         dbConn,
+		LogLevel:             checkEnvVarForStringValue("COGS_LOG_LEVEL", *level),
+		LogFormat:            checkEnvVarForStringValue("COGS_LOG_FORMAT", *format),
+		DevMode:              checkEnvVarForBoolValue("COGS_DEV_MODE", *devMode),
+		CallbackURL:          checkEnvVarForStringValue("COGS_CALLBACK_URL", *callback),
 		HistoryRetentionDays: checkEnvVarForIntValue("COGS_HISTORY_RETENTION_DAYS", *retention),
+		Brand:                checkEnvVarForStringValue("COGS_BRAND", *brand),
 	}
 }
 
