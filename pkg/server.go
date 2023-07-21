@@ -28,6 +28,7 @@ type Server struct {
 	sessionManager *SessionManager
 	cronService    *cron.Cron
 	callbackURL    string
+	retentionDays int
 }
 
 type NewServerInput struct {
@@ -35,6 +36,7 @@ type NewServerInput struct {
 	DB          *ent.Client
 	DevMode     bool
 	CallbackURL string
+	RetentionDays int
 }
 
 func NewServer(input NewServerInput) *Server {
@@ -50,11 +52,13 @@ func NewServer(input NewServerInput) *Server {
 		sessionManager: NewSessionManager(),
 		cronService:    cron.New(),
 		callbackURL:    input.CallbackURL,
+		retentionDays: input.RetentionDays,
 	}
 }
 
 func (s *Server) Run(ctx context.Context) {
 	go runErroredJobCleaner(ctx, s.db)
+	go runHistoryRetention(ctx, s.db, s.retentionDays)
 	e := echo.New()
 	e.Renderer = mustNewRenderer()
 	e.HideBanner = true

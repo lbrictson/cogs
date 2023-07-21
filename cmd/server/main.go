@@ -40,6 +40,7 @@ func main() {
 		DB:          c.DBConnection,
 		DevMode:     c.DevMode,
 		CallbackURL: c.CallbackURL,
+		RetentionDays: c.HistoryRetentionDays,
 	})
 	s.Run(ctx)
 }

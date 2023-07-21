@@ -43,3 +43,25 @@ func runErroredJobCleaner(ctx context.Context, db *ent.Client) {
 		time.Sleep(5 * time.Minute)
 	}
 }
+
+func runHistoryRetention(ctx context.Context, db *ent.Client, retentionDays int) {
+	for {
+		LogFromCtx(ctx).Info("Running history retention sweep")
+		histories, err := getHistories(ctx, db)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			time.Sleep(5 * time.Minute)
+			continue
+		}
+		for _, history := range histories {
+			if history.CreatedAt.Before(time.Now().Add(-1 * time.Hour * 24 * time.Duration(retentionDays))) {
+				LogFromCtx(ctx).Info("Deleting history because it has aged out: " + history.RunID)
+				err := deleteHistory(ctx, db, history.ID)
+				if err != nil {
+					LogFromCtx(ctx).Error(err.Error())
+				}
+			}
+		}
+		time.Sleep(1 * time.Hour)
+	}
+}
