@@ -28,15 +28,17 @@ type Server struct {
 	sessionManager *SessionManager
 	cronService    *cron.Cron
 	callbackURL    string
-	retentionDays int
+	retentionDays  int
+	brand          string
 }
 
 type NewServerInput struct {
-	Port        int
-	DB          *ent.Client
-	DevMode     bool
-	CallbackURL string
+	Port          int
+	DB            *ent.Client
+	DevMode       bool
+	CallbackURL   string
 	RetentionDays int
+	Brand         string
 }
 
 func NewServer(input NewServerInput) *Server {
@@ -45,6 +47,9 @@ func NewServer(input NewServerInput) *Server {
 		fmt.Println("WARNING: Running in development mode. Cookie secret is not secure.")
 		cookieSecret = "notAGreatSecretValue"
 	}
+	if input.Brand == "" {
+		input.Brand = "Cogs"
+	}
 	return &Server{
 		port:           input.Port,
 		db:             input.DB,
@@ -52,7 +57,8 @@ func NewServer(input NewServerInput) *Server {
 		sessionManager: NewSessionManager(),
 		cronService:    cron.New(),
 		callbackURL:    input.CallbackURL,
-		retentionDays: input.RetentionDays,
+		retentionDays:  input.RetentionDays,
+		brand:          input.Brand,
 	}
 }
 
@@ -60,7 +66,7 @@ func (s *Server) Run(ctx context.Context) {
 	go runErroredJobCleaner(ctx, s.db)
 	go runHistoryRetention(ctx, s.db, s.retentionDays)
 	e := echo.New()
-	e.Renderer = mustNewRenderer()
+	e.Renderer = mustNewRenderer(s.brand)
 	e.HideBanner = true
 	globalCallbackURL = s.callbackURL
 	// Read in static assets from the mock file system
@@ -118,14 +124,16 @@ func (s *Server) Run(ctx context.Context) {
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%v", s.port)))
 }
 
-func mustNewRenderer() *Renderer {
+func mustNewRenderer(brand string) *Renderer {
 	r := Renderer{}
 	r.templates = template.Must(template.ParseFS(web.Assets, "templates/*.tmpl"))
+	r.brand = brand
 	return &r
 }
 
 type Renderer struct {
 	templates *template.Template
+	brand     string
 }
 
 func (t *Renderer) Render(w io.Writer, name string, data any, c echo.Context) error {
@@ -141,6 +149,7 @@ func (t *Renderer) Render(w io.Writer, name string, data any, c echo.Context) er
 	}
 	templateData["Role"] = c.Get("role")
 	templateData["Email"] = c.Get("email")
+	templateData["Brand"] = t.brand
 	err := t.templates.ExecuteTemplate(w, name, templateData)
 	if err != nil {
 		LogFromCtx(c.Request().Context()).Error(err.Error())
