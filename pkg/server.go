@@ -82,6 +82,7 @@ func (s *Server) Run(ctx context.Context) {
 	loginRequiredRoutes.POST("/projects/:projectID/create", formCreateScript(ctx, s.db), s.projectAdminRequired)
 	loginRequiredRoutes.GET("/projects/:projectID/:script_id/edit", renderEditScriptPage(ctx, s.db), s.projectAdminRequired)
 	loginRequiredRoutes.POST("/projects/:projectID/:script_id/edit", formUpdateScript(ctx, s.db), s.projectAdminRequired)
+	loginRequiredRoutes.DELETE("/projects/:projectID/:script_id", hookDeleteScript(ctx, s.db), s.projectAdminRequired)
 	loginRequiredRoutes.GET("/projects/:projectID/:script_id/history", renderHistoryPage(ctx, s.db), s.projectAccessRequired)
 	loginRequiredRoutes.GET("/projects/:projectID/:script_id/history/:historyID", renderSingleHistoryPage(ctx, s.db), s.projectAccessRequired)
 	loginRequiredRoutes.GET("/projects/:projectID/secrets", renderViewProjectSecretsPage(ctx, s.db), s.projectAccessRequired)
@@ -109,6 +110,7 @@ func (s *Server) Run(ctx context.Context) {
 	e.POST("/login", formLogin(ctx, s.db, s.sessionStore, s.sessionManager))
 	e.GET("/failed_login", renderFailedLoginPage(ctx))
 	e.GET("/logout", logoutHook(ctx, s.sessionStore, s.sessionManager))
+	startScheduledJobs(ctx, s.db)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%v", s.port)))
 }
 

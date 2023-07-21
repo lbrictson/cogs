@@ -295,6 +295,11 @@ func formUpdateScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 				"Message": err.Error(),
 			})
 		}
+		if *input.ScheduleEnabled {
+			upsertScheduledJobToScheduler(ctx, i, *input.ScheduleCron, db)
+		} else {
+			removeScheduledJobFromScheduler(i)
+		}
 		LogFromCtx(ctx).Info("updated script", "script", scriptID, "user", userFromEchoContext(c))
 		return c.Redirect(http.StatusFound, "/projects/"+c.Param("projectID")+"/"+scriptID)
 	}
@@ -381,6 +386,9 @@ func formCreateScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
 				"Message": err.Error(),
 			})
+		}
+		if input.ScheduleEnabled {
+			upsertScheduledJobToScheduler(ctx, script.ID, input.ScheduleCron, db)
 		}
 		LogFromCtx(ctx).Info("created script", "script", data.Name, "user", userFromEchoContext(c))
 		return c.Redirect(http.StatusFound, "/projects/"+c.Param("projectID")+"/"+fmt.Sprintf("%v", script.ID))

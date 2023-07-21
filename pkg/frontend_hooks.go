@@ -25,6 +25,25 @@ func hookDeleteProject(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			LogFromCtx(ctx).Error(err.Error())
 			return c.HTML(http.StatusInternalServerError, err.Error())
 		}
+		// Delete all scripts in the project
+		s, _ := getProjectScripts(ctx, db, i)
+		for _, script := range s {
+			err = deleteScript(ctx, db, script.ID)
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.HTML(http.StatusInternalServerError, err.Error())
+			}
+			removeScheduledJobFromScheduler(script.ID)
+		}
+		// Delete all secrets in the project
+		secrets, _ := getProjectSecrets(ctx, db, i)
+		for _, secret := range secrets {
+			err = deleteSecret(ctx, db, secret.ID)
+			if err != nil {
+				LogFromCtx(ctx).Error(err.Error())
+				return c.HTML(http.StatusInternalServerError, err.Error())
+			}
+		}
 		LogFromCtx(ctx).Info("Deleted project", "id", i)
 		return c.HTML(http.StatusOK, "<h1>Deleted</h1>")
 	}
@@ -68,6 +87,28 @@ func hookDeleteSecret(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			return c.HTML(http.StatusInternalServerError, err.Error())
 		}
 		LogFromCtx(ctx).Info("Deleted secret", "id", i)
+		return c.HTML(http.StatusOK, "<h1>Deleted</h1>")
+	}
+}
+
+func hookDeleteScript(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("script_id")
+		// convert to int
+		i, err := strconv.Atoi(id)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		err = deleteScript(ctx, db, i)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.HTML(http.StatusInternalServerError, err.Error())
+		}
+		removeScheduledJobFromScheduler(i)
+		LogFromCtx(ctx).Info("Deleted script", "id", i)
 		return c.HTML(http.StatusOK, "<h1>Deleted</h1>")
 	}
 }
