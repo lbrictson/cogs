@@ -100,6 +100,8 @@ Each job may have a schedule set and either enabled or disabled.  Schedules that
 
 A schedule must be specified in the [cron format](https://en.wikipedia.org/wiki/Cron#CRON_expression) and may be set to run at any interval.
 
+**Note:** Scheduled scripts will not have any input values available to them
+
 ### Special cases
 
 - If a job is running and the schedule is set to run the job will run a second time
