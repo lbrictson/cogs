@@ -10,6 +10,7 @@ import (
 	"github.com/slack-go/slack"
 	"net/http"
 	"net/smtp"
+	"time"
 )
 
 type SlackNotifyInput struct {
@@ -50,6 +51,7 @@ type WebhookNotificationPayload struct {
 	DurationSeconds int               `json:"duration_seconds"`
 	Arguments       map[string]string `json:"arguments,omitempty"`
 	RunID           int               `json:"run_id"`
+	CreatedAt       time.Time         `json:"created_at"`
 }
 
 func notifyWebhook(ctx context.Context, runID int, webhookURL string, db *ent.Client) error {
@@ -76,6 +78,7 @@ func notifyWebhook(ctx context.Context, runID int, webhookURL string, db *ent.Cl
 		DurationSeconds: history.Duration,
 		Arguments:       history.Arguments,
 		RunID:           history.ID,
+		CreatedAt:       history.CreatedAt,
 	}
 	return doWebhookNotification(ctx, input, webhookURL)
 }
