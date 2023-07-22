@@ -17,6 +17,11 @@ type Config struct {
 	CallbackURL          string
 	HistoryRetentionDays int
 	Brand                string
+	SMTPHost             string
+	SMTPPort             int
+	SMTPUsername         string
+	SMTPPassword         string
+	SMTPFrom             string
 }
 
 func NewConfig() *Config {
@@ -28,6 +33,11 @@ func NewConfig() *Config {
 	callback := flag.String("callback", "http://localhost:8080", "callback url")
 	retention := flag.Int("retention", 30, "history retention in days")
 	brand := flag.String("brand", "Cogs", "brand name")
+	smtpHost := flag.String("smtp-host", "", "smtp host")
+	smtpPort := flag.Int("smtp-port", 25, "smtp port")
+	smtpUsername := flag.String("smtp-username", "", "smtp username")
+	smtpPassword := flag.String("smtp-password", "", "smtp password")
+	smtpFrom := flag.String("smtp-from", "cogs@localhost.com", "smtp from address")
 	flag.Parse()
 	dbConn, err := NewDatabaseConnection(NewDatabaseConnectionInput{
 		InMemory: false,
@@ -47,6 +57,11 @@ func NewConfig() *Config {
 		CallbackURL:          checkEnvVarForStringValue("COGS_CALLBACK_URL", *callback),
 		HistoryRetentionDays: checkEnvVarForIntValue("COGS_HISTORY_RETENTION_DAYS", *retention),
 		Brand:                checkEnvVarForStringValue("COGS_BRAND", *brand),
+		SMTPHost:             checkEnvVarForStringValue("COGS_SMTP_HOST", *smtpHost),
+		SMTPPort:             checkEnvVarForIntValue("COGS_SMTP_PORT", *smtpPort),
+		SMTPUsername:         checkEnvVarForStringValue("COGS_SMTP_USERNAME", *smtpUsername),
+		SMTPPassword:         checkEnvVarForStringValue("COGS_SMTP_PASSWORD", *smtpPassword),
+		SMTPFrom:             checkEnvVarForStringValue("COGS_SMTP_FROM", *smtpFrom),
 	}
 }
 

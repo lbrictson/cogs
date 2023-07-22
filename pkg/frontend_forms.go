@@ -50,6 +50,13 @@ func formCreateUser(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 		if err := c.Bind(&data); err != nil {
 			return err
 		}
+		// validate password
+		isPasswordValid, reason := validatePassword(data.Password)
+		if !isPasswordValid {
+			return c.Render(http.StatusBadRequest, "generic_error", map[string]interface{}{
+				"Message": reason,
+			})
+		}
 		_, err := createUser(ctx, db, CreateUserInput{
 			Email:    data.Email,
 			Password: data.Password,
@@ -85,6 +92,13 @@ func formEditUser(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 		input := UpdateUserInput{}
 		if data.Password != "" {
 			input.Password = &data.Password
+			// validate password
+			isPasswordValid, reason := validatePassword(data.Password)
+			if !isPasswordValid {
+				return c.Render(http.StatusBadRequest, "generic_error", map[string]interface{}{
+					"Message": reason,
+				})
+			}
 		}
 		if data.Role != "" {
 			input.Role = &data.Role

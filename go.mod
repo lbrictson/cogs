@@ -7,7 +7,10 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/sessions v1.2.1
+	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/labstack/echo/v4 v4.10.2
+	github.com/robfig/cron/v3 v3.0.1
+	github.com/slack-go/slack v0.12.2
 	golang.org/x/crypto v0.6.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	modernc.org/sqlite v1.23.1
@@ -28,8 +31,6 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/slack-go/slack v0.12.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect

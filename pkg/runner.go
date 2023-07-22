@@ -160,6 +160,8 @@ func doScriptRun(ctx context.Context, db *ent.Client, input RunScriptInput, runI
 				}, input.SuccessChannel.SlackConfig.WebhookURL)
 			case "webhook":
 				notifyWebhook(ctx, historyID, input.SuccessChannel.WebhookConfig.URL, db)
+			case "email":
+				notifyEmail(ctx, historyID, input.SuccessChannel.EmailConfig.To, db)
 			}
 		}
 	} else {
@@ -175,6 +177,8 @@ func doScriptRun(ctx context.Context, db *ent.Client, input RunScriptInput, runI
 				}, input.FailureChannel.SlackConfig.WebhookURL)
 			case "webhook":
 				notifyWebhook(ctx, historyID, input.FailureChannel.WebhookConfig.URL, db)
+			case "email":
+				notifyEmail(ctx, historyID, input.FailureChannel.EmailConfig.To, db)
 			}
 		}
 	}
