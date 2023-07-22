@@ -21,6 +21,16 @@ var sessionName = "cogs-session"
 var dataDirectory = ""
 var globalCallbackURL = ""
 
+type SMPTSettings struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	From     string
+}
+
+var smtpSettings SMPTSettings
+
 type Server struct {
 	port           int
 	db             *ent.Client
@@ -39,6 +49,11 @@ type NewServerInput struct {
 	CallbackURL   string
 	RetentionDays int
 	Brand         string
+	SMPTHost      string
+	SMPTPort      int
+	SMPTUsername  string
+	SMPTPassword  string
+	SMPTFrom      string
 }
 
 func NewServer(input NewServerInput) *Server {
@@ -49,6 +64,13 @@ func NewServer(input NewServerInput) *Server {
 	}
 	if input.Brand == "" {
 		input.Brand = "Cogs"
+	}
+	smtpSettings = SMPTSettings{
+		Host:     input.SMPTHost,
+		Port:     input.SMPTPort,
+		Username: input.SMPTUsername,
+		Password: input.SMPTPassword,
+		From:     input.SMPTFrom,
 	}
 	return &Server{
 		port:           input.Port,

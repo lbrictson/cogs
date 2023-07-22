@@ -42,6 +42,11 @@ func main() {
 		CallbackURL:   c.CallbackURL,
 		RetentionDays: c.HistoryRetentionDays,
 		Brand:         c.Brand,
+		SMPTHost:      c.SMTPHost,
+		SMPTPort:      c.SMTPPort,
+		SMPTUsername:  c.SMTPUsername,
+		SMPTPassword:  c.SMTPPassword,
+		SMPTFrom:      c.SMTPFrom,
 	})
 	s.Run(ctx)
 }

@@ -5,9 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/jordan-wright/email"
 	"github.com/lbrictson/cogs/ent"
 	"github.com/slack-go/slack"
 	"net/http"
+	"net/smtp"
 )
 
 type SlackNotifyInput struct {
@@ -94,4 +96,36 @@ func doWebhookNotification(ctx context.Context, input WebhookNotificationPayload
 		return err
 	}
 	return nil
+}
+
+func notifyEmail(ctx context.Context, runID int, toAddress string, db *ent.Client) error {
+	history, err := getHistoryByID(ctx, db, runID)
+	if err != nil {
+		return err
+	}
+	script, err := getScriptByID(ctx, db, history.ScriptID)
+	if err != nil {
+		return err
+	}
+	project, err := getProjectByID(ctx, db, script.ProjectID)
+	if err != nil {
+		return err
+	}
+	status := "Success"
+	if !history.Success {
+		status = "Failed"
+	}
+	e := email.NewEmail()
+	e.From = smtpSettings.From
+	e.To = []string{toAddress}
+	e.Subject = fmt.Sprintf("Script Run Complete: %v | %v - Status %v", project.Name, script.Name, status)
+	e.Text = []byte(fmt.Sprintf("Script %v in project %v run %v has completed with status %v. See the history link for more details: %v",
+		script.Name, project.Name, history.ID, status, fmt.Sprintf("%v/projects/%v/%v/history/%v", globalCallbackURL, script.ProjectID, script.ID, history.ID)))
+	e.HTML = []byte(fmt.Sprintf("<p>Script %v in project %v run %v has completed with status %v. See the history link for more details: %v</p>",
+		script.Name, project.Name, history.ID, status, fmt.Sprintf("%v/projects/%v/%v/history/%v", globalCallbackURL, script.ProjectID, script.ID, history.ID)))
+	err = e.Send(fmt.Sprintf("%v:%v", smtpSettings.Host, smtpSettings.Port), smtp.PlainAuth("", smtpSettings.Username, smtpSettings.Password, fmt.Sprintf("%v", smtpSettings.Host)))
+	if err != nil {
+		LogFromCtx(ctx).Error("Error sending email: %v", err)
+	}
+	return err
 }
