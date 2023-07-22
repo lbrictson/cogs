@@ -36,7 +36,7 @@ TODO
 
 ## Configuration
 
-You can configure cogs with either command line flags or environment variables.  The following table shows the available
+You can configure cogs with either command line flags or environment variables.  The following table shows the available options
 
 When both a flag and environment variable are set, the environment variable takes precedence.
 
