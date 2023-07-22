@@ -107,7 +107,7 @@ A schedule must be specified in the [cron format](https://en.wikipedia.org/wiki/
 
 ## Specifying Script Inputs
 
-Script inputs are written in raw JSONc currently, the below example shows both a drop-down (select) implementation and a free form implementation
+Script inputs are written in raw JSON currently, the below example shows both a drop-down (select) implementation and a free form implementation
 
 When `strict_options` is set to true you must provide an array of options
 
