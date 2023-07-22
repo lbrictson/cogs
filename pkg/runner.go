@@ -158,6 +158,8 @@ func doScriptRun(ctx context.Context, db *ent.Client, input RunScriptInput, runI
 						globalCallbackURL, input.ProjectID, input.Script.ID, historyID),
 					Success: true,
 				}, input.SuccessChannel.SlackConfig.WebhookURL)
+			case "webhook":
+				notifyWebhook(ctx, historyID, input.SuccessChannel.WebhookConfig.URL, db)
 			}
 		}
 	} else {
@@ -171,6 +173,8 @@ func doScriptRun(ctx context.Context, db *ent.Client, input RunScriptInput, runI
 						globalCallbackURL, input.ProjectID, input.Script.ID, historyID),
 					Success: false,
 				}, input.FailureChannel.SlackConfig.WebhookURL)
+			case "webhook":
+				notifyWebhook(ctx, historyID, input.FailureChannel.WebhookConfig.URL, db)
 			}
 		}
 	}
