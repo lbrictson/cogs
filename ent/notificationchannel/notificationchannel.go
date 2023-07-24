@@ -29,6 +29,10 @@ const (
 	FieldWebhookConfig = "webhook_config"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
+	// FieldLastUsed holds the string denoting the last_used field in the database.
+	FieldLastUsed = "last_used"
+	// FieldLastUsedSuccess holds the string denoting the last_used_success field in the database.
+	FieldLastUsedSuccess = "last_used_success"
 	// Table holds the table name of the notificationchannel in the database.
 	Table = "notification_channels"
 )
@@ -44,6 +48,8 @@ var Columns = []string{
 	FieldEmailConfig,
 	FieldWebhookConfig,
 	FieldEnabled,
+	FieldLastUsed,
+	FieldLastUsedSuccess,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -98,4 +104,14 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 // ByEnabled orders the results by the enabled field.
 func ByEnabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEnabled, opts...).ToFunc()
+}
+
+// ByLastUsed orders the results by the last_used field.
+func ByLastUsed(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastUsed, opts...).ToFunc()
+}
+
+// ByLastUsedSuccess orders the results by the last_used_success field.
+func ByLastUsedSuccess(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastUsedSuccess, opts...).ToFunc()
 }

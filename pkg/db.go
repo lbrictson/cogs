@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"errors"
+	"github.com/dustin/go-humanize"
 	"github.com/lbrictson/cogs/ent"
 	"github.com/lbrictson/cogs/ent/access"
 	"github.com/lbrictson/cogs/ent/history"
@@ -805,16 +806,26 @@ func convertEntNotificationChannelToNotificationChannelModel(entNotificationChan
 	if entNotificationChannel == nil {
 		return NotificationChannelModel{}
 	}
+	hasBeenUsed := false
+	lastUsedHuman := "Never"
+	if entNotificationChannel.LastUsed != nil {
+		hasBeenUsed = true
+		lastUsedHuman = humanize.Time(*entNotificationChannel.LastUsed)
+	}
 	return NotificationChannelModel{
-		ID:            entNotificationChannel.ID,
-		CreatedAt:     entNotificationChannel.CreatedAt,
-		UpdatedAt:     entNotificationChannel.UpdatedAt,
-		Name:          entNotificationChannel.Name,
-		Type:          entNotificationChannel.Type,
-		SlackConfig:   entNotificationChannel.SlackConfig,
-		EmailConfig:   entNotificationChannel.EmailConfig,
-		WebhookConfig: entNotificationChannel.WebhookConfig,
-		Enabled:       entNotificationChannel.Enabled,
+		ID:                 entNotificationChannel.ID,
+		CreatedAt:          entNotificationChannel.CreatedAt,
+		UpdatedAt:          entNotificationChannel.UpdatedAt,
+		Name:               entNotificationChannel.Name,
+		Type:               entNotificationChannel.Type,
+		SlackConfig:        entNotificationChannel.SlackConfig,
+		EmailConfig:        entNotificationChannel.EmailConfig,
+		WebhookConfig:      entNotificationChannel.WebhookConfig,
+		Enabled:            entNotificationChannel.Enabled,
+		HasBeenUsed:        hasBeenUsed,
+		LastSend:           entNotificationChannel.LastUsed,
+		LastSendSuccessful: entNotificationChannel.LastUsedSuccess,
+		LastSendHuman:      lastUsedHuman,
 	}
 }
 
@@ -843,12 +854,14 @@ func createNotificationChannel(ctx context.Context, db *ent.Client, input Create
 }
 
 type UpdateNotificationChannelInput struct {
-	Name          *string
-	Type          *string
-	SlackConfig   *schema.SlackConfig
-	EmailConfig   *schema.EmailConfig
-	WebhookConfig *schema.WebhookConfig
-	Enabled       *bool
+	Name            *string
+	Type            *string
+	SlackConfig     *schema.SlackConfig
+	EmailConfig     *schema.EmailConfig
+	WebhookConfig   *schema.WebhookConfig
+	Enabled         *bool
+	LastUsed        *time.Time
+	LastUsedSuccess *bool
 }
 
 func updateNotificationChannel(ctx context.Context, db *ent.Client, id int, input UpdateNotificationChannelInput) (NotificationChannelModel, error) {
@@ -874,6 +887,12 @@ func updateNotificationChannel(ctx context.Context, db *ent.Client, id int, inpu
 	}
 	if input.Enabled != nil {
 		builder = builder.SetEnabled(*input.Enabled)
+	}
+	if input.LastUsed != nil {
+		builder = builder.SetLastUsed(*input.LastUsed)
+	}
+	if input.LastUsedSuccess != nil {
+		builder = builder.SetLastUsedSuccess(*input.LastUsedSuccess)
 	}
 	nc, err = builder.Save(ctx)
 	return convertEntNotificationChannelToNotificationChannelModel(nc), nil

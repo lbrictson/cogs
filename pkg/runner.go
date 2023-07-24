@@ -147,38 +147,105 @@ func doScriptRun(ctx context.Context, db *ent.Client, input RunScriptInput, runI
 		updateStatsInput.IncrementError = true
 	}
 	updateScriptStats(ctx, db, updateStatsInput)
+	now := time.Now()
 	if runOutcomeSuccess {
 		if input.SuccessChannel != nil {
 			switch input.SuccessChannel.Type {
 			case "slack":
-				notifySlack(ctx, SlackNotifyInput{
+				notificationErr := notifySlack(ctx, SlackNotifyInput{
 					ProjectName: input.ProjectName,
 					ScriptName:  input.Script.Name,
 					HistoryLink: fmt.Sprintf("%v/projects/%v/%v/history/%v",
 						globalCallbackURL, input.ProjectID, input.Script.ID, historyID),
 					Success: true,
 				}, input.SuccessChannel.SlackConfig.WebhookURL)
+				if notificationErr != nil {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &f,
+						LastUsed:        &now,
+					})
+				} else {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &t,
+						LastUsed:        &now,
+					})
+				}
 			case "webhook":
-				notifyWebhook(ctx, historyID, input.SuccessChannel.WebhookConfig.URL, db)
+				notificationErr := notifyWebhook(ctx, historyID, input.SuccessChannel.WebhookConfig.URL, db)
+				if notificationErr != nil {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &f,
+						LastUsed:        &now,
+					})
+				} else {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &t,
+						LastUsed:        &now,
+					})
+				}
 			case "email":
-				notifyEmail(ctx, historyID, input.SuccessChannel.EmailConfig.To, db)
+				notificationErr := notifyEmail(ctx, historyID, input.SuccessChannel.EmailConfig.To, db)
+				if notificationErr != nil {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &f,
+						LastUsed:        &now,
+					})
+				} else {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &t,
+						LastUsed:        &now,
+					})
+				}
 			}
 		}
 	} else {
 		if input.FailureChannel != nil {
 			switch input.FailureChannel.Type {
 			case "slack":
-				notifySlack(ctx, SlackNotifyInput{
+				notificationErr := notifySlack(ctx, SlackNotifyInput{
 					ProjectName: input.ProjectName,
 					ScriptName:  input.Script.Name,
 					HistoryLink: fmt.Sprintf("%v/projects/%v/%v/history/%v",
 						globalCallbackURL, input.ProjectID, input.Script.ID, historyID),
 					Success: false,
 				}, input.FailureChannel.SlackConfig.WebhookURL)
+				if notificationErr != nil {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &f,
+						LastUsed:        &now,
+					})
+				} else {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &t,
+						LastUsed:        &now,
+					})
+				}
 			case "webhook":
-				notifyWebhook(ctx, historyID, input.FailureChannel.WebhookConfig.URL, db)
+				notificationErr := notifyWebhook(ctx, historyID, input.FailureChannel.WebhookConfig.URL, db)
+				if notificationErr != nil {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &f,
+						LastUsed:        &now,
+					})
+				} else {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &t,
+						LastUsed:        &now,
+					})
+				}
 			case "email":
-				notifyEmail(ctx, historyID, input.FailureChannel.EmailConfig.To, db)
+				notificationErr := notifyEmail(ctx, historyID, input.FailureChannel.EmailConfig.To, db)
+				if notificationErr != nil {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &f,
+						LastUsed:        &now,
+					})
+				} else {
+					updateNotificationChannel(ctx, db, input.SuccessChannel.ID, UpdateNotificationChannelInput{
+						LastUsedSuccess: &t,
+						LastUsed:        &now,
+					})
+				}
 			}
 		}
 	}

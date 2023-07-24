@@ -121,6 +121,46 @@ func (ncu *NotificationChannelUpdate) SetNillableEnabled(b *bool) *NotificationC
 	return ncu
 }
 
+// SetLastUsed sets the "last_used" field.
+func (ncu *NotificationChannelUpdate) SetLastUsed(t time.Time) *NotificationChannelUpdate {
+	ncu.mutation.SetLastUsed(t)
+	return ncu
+}
+
+// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
+func (ncu *NotificationChannelUpdate) SetNillableLastUsed(t *time.Time) *NotificationChannelUpdate {
+	if t != nil {
+		ncu.SetLastUsed(*t)
+	}
+	return ncu
+}
+
+// ClearLastUsed clears the value of the "last_used" field.
+func (ncu *NotificationChannelUpdate) ClearLastUsed() *NotificationChannelUpdate {
+	ncu.mutation.ClearLastUsed()
+	return ncu
+}
+
+// SetLastUsedSuccess sets the "last_used_success" field.
+func (ncu *NotificationChannelUpdate) SetLastUsedSuccess(b bool) *NotificationChannelUpdate {
+	ncu.mutation.SetLastUsedSuccess(b)
+	return ncu
+}
+
+// SetNillableLastUsedSuccess sets the "last_used_success" field if the given value is not nil.
+func (ncu *NotificationChannelUpdate) SetNillableLastUsedSuccess(b *bool) *NotificationChannelUpdate {
+	if b != nil {
+		ncu.SetLastUsedSuccess(*b)
+	}
+	return ncu
+}
+
+// ClearLastUsedSuccess clears the value of the "last_used_success" field.
+func (ncu *NotificationChannelUpdate) ClearLastUsedSuccess() *NotificationChannelUpdate {
+	ncu.mutation.ClearLastUsedSuccess()
+	return ncu
+}
+
 // Mutation returns the NotificationChannelMutation object of the builder.
 func (ncu *NotificationChannelUpdate) Mutation() *NotificationChannelMutation {
 	return ncu.mutation
@@ -200,6 +240,18 @@ func (ncu *NotificationChannelUpdate) sqlSave(ctx context.Context) (n int, err e
 	}
 	if value, ok := ncu.mutation.Enabled(); ok {
 		_spec.SetField(notificationchannel.FieldEnabled, field.TypeBool, value)
+	}
+	if value, ok := ncu.mutation.LastUsed(); ok {
+		_spec.SetField(notificationchannel.FieldLastUsed, field.TypeTime, value)
+	}
+	if ncu.mutation.LastUsedCleared() {
+		_spec.ClearField(notificationchannel.FieldLastUsed, field.TypeTime)
+	}
+	if value, ok := ncu.mutation.LastUsedSuccess(); ok {
+		_spec.SetField(notificationchannel.FieldLastUsedSuccess, field.TypeBool, value)
+	}
+	if ncu.mutation.LastUsedSuccessCleared() {
+		_spec.ClearField(notificationchannel.FieldLastUsedSuccess, field.TypeBool)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ncu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -313,6 +365,46 @@ func (ncuo *NotificationChannelUpdateOne) SetNillableEnabled(b *bool) *Notificat
 	return ncuo
 }
 
+// SetLastUsed sets the "last_used" field.
+func (ncuo *NotificationChannelUpdateOne) SetLastUsed(t time.Time) *NotificationChannelUpdateOne {
+	ncuo.mutation.SetLastUsed(t)
+	return ncuo
+}
+
+// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
+func (ncuo *NotificationChannelUpdateOne) SetNillableLastUsed(t *time.Time) *NotificationChannelUpdateOne {
+	if t != nil {
+		ncuo.SetLastUsed(*t)
+	}
+	return ncuo
+}
+
+// ClearLastUsed clears the value of the "last_used" field.
+func (ncuo *NotificationChannelUpdateOne) ClearLastUsed() *NotificationChannelUpdateOne {
+	ncuo.mutation.ClearLastUsed()
+	return ncuo
+}
+
+// SetLastUsedSuccess sets the "last_used_success" field.
+func (ncuo *NotificationChannelUpdateOne) SetLastUsedSuccess(b bool) *NotificationChannelUpdateOne {
+	ncuo.mutation.SetLastUsedSuccess(b)
+	return ncuo
+}
+
+// SetNillableLastUsedSuccess sets the "last_used_success" field if the given value is not nil.
+func (ncuo *NotificationChannelUpdateOne) SetNillableLastUsedSuccess(b *bool) *NotificationChannelUpdateOne {
+	if b != nil {
+		ncuo.SetLastUsedSuccess(*b)
+	}
+	return ncuo
+}
+
+// ClearLastUsedSuccess clears the value of the "last_used_success" field.
+func (ncuo *NotificationChannelUpdateOne) ClearLastUsedSuccess() *NotificationChannelUpdateOne {
+	ncuo.mutation.ClearLastUsedSuccess()
+	return ncuo
+}
+
 // Mutation returns the NotificationChannelMutation object of the builder.
 func (ncuo *NotificationChannelUpdateOne) Mutation() *NotificationChannelMutation {
 	return ncuo.mutation
@@ -422,6 +514,18 @@ func (ncuo *NotificationChannelUpdateOne) sqlSave(ctx context.Context) (_node *N
 	}
 	if value, ok := ncuo.mutation.Enabled(); ok {
 		_spec.SetField(notificationchannel.FieldEnabled, field.TypeBool, value)
+	}
+	if value, ok := ncuo.mutation.LastUsed(); ok {
+		_spec.SetField(notificationchannel.FieldLastUsed, field.TypeTime, value)
+	}
+	if ncuo.mutation.LastUsedCleared() {
+		_spec.ClearField(notificationchannel.FieldLastUsed, field.TypeTime)
+	}
+	if value, ok := ncuo.mutation.LastUsedSuccess(); ok {
+		_spec.SetField(notificationchannel.FieldLastUsedSuccess, field.TypeBool, value)
+	}
+	if ncuo.mutation.LastUsedSuccessCleared() {
+		_spec.ClearField(notificationchannel.FieldLastUsedSuccess, field.TypeBool)
 	}
 	_node = &NotificationChannel{config: ncuo.config}
 	_spec.Assign = _node.assignValues

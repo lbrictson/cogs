@@ -1678,21 +1678,23 @@ func (m *HistoryMutation) ResetEdge(name string) error {
 // NotificationChannelMutation represents an operation that mutates the NotificationChannel nodes in the graph.
 type NotificationChannelMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int
-	created_at     *time.Time
-	updated_at     *time.Time
-	name           *string
-	_type          *string
-	slack_config   *schema.SlackConfig
-	email_config   *schema.EmailConfig
-	webhook_config *schema.WebhookConfig
-	enabled        *bool
-	clearedFields  map[string]struct{}
-	done           bool
-	oldValue       func(context.Context) (*NotificationChannel, error)
-	predicates     []predicate.NotificationChannel
+	op                Op
+	typ               string
+	id                *int
+	created_at        *time.Time
+	updated_at        *time.Time
+	name              *string
+	_type             *string
+	slack_config      *schema.SlackConfig
+	email_config      *schema.EmailConfig
+	webhook_config    *schema.WebhookConfig
+	enabled           *bool
+	last_used         *time.Time
+	last_used_success *bool
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*NotificationChannel, error)
+	predicates        []predicate.NotificationChannel
 }
 
 var _ ent.Mutation = (*NotificationChannelMutation)(nil)
@@ -2120,6 +2122,104 @@ func (m *NotificationChannelMutation) ResetEnabled() {
 	m.enabled = nil
 }
 
+// SetLastUsed sets the "last_used" field.
+func (m *NotificationChannelMutation) SetLastUsed(t time.Time) {
+	m.last_used = &t
+}
+
+// LastUsed returns the value of the "last_used" field in the mutation.
+func (m *NotificationChannelMutation) LastUsed() (r time.Time, exists bool) {
+	v := m.last_used
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUsed returns the old "last_used" field's value of the NotificationChannel entity.
+// If the NotificationChannel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationChannelMutation) OldLastUsed(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUsed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUsed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUsed: %w", err)
+	}
+	return oldValue.LastUsed, nil
+}
+
+// ClearLastUsed clears the value of the "last_used" field.
+func (m *NotificationChannelMutation) ClearLastUsed() {
+	m.last_used = nil
+	m.clearedFields[notificationchannel.FieldLastUsed] = struct{}{}
+}
+
+// LastUsedCleared returns if the "last_used" field was cleared in this mutation.
+func (m *NotificationChannelMutation) LastUsedCleared() bool {
+	_, ok := m.clearedFields[notificationchannel.FieldLastUsed]
+	return ok
+}
+
+// ResetLastUsed resets all changes to the "last_used" field.
+func (m *NotificationChannelMutation) ResetLastUsed() {
+	m.last_used = nil
+	delete(m.clearedFields, notificationchannel.FieldLastUsed)
+}
+
+// SetLastUsedSuccess sets the "last_used_success" field.
+func (m *NotificationChannelMutation) SetLastUsedSuccess(b bool) {
+	m.last_used_success = &b
+}
+
+// LastUsedSuccess returns the value of the "last_used_success" field in the mutation.
+func (m *NotificationChannelMutation) LastUsedSuccess() (r bool, exists bool) {
+	v := m.last_used_success
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUsedSuccess returns the old "last_used_success" field's value of the NotificationChannel entity.
+// If the NotificationChannel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationChannelMutation) OldLastUsedSuccess(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUsedSuccess is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUsedSuccess requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUsedSuccess: %w", err)
+	}
+	return oldValue.LastUsedSuccess, nil
+}
+
+// ClearLastUsedSuccess clears the value of the "last_used_success" field.
+func (m *NotificationChannelMutation) ClearLastUsedSuccess() {
+	m.last_used_success = nil
+	m.clearedFields[notificationchannel.FieldLastUsedSuccess] = struct{}{}
+}
+
+// LastUsedSuccessCleared returns if the "last_used_success" field was cleared in this mutation.
+func (m *NotificationChannelMutation) LastUsedSuccessCleared() bool {
+	_, ok := m.clearedFields[notificationchannel.FieldLastUsedSuccess]
+	return ok
+}
+
+// ResetLastUsedSuccess resets all changes to the "last_used_success" field.
+func (m *NotificationChannelMutation) ResetLastUsedSuccess() {
+	m.last_used_success = nil
+	delete(m.clearedFields, notificationchannel.FieldLastUsedSuccess)
+}
+
 // Where appends a list predicates to the NotificationChannelMutation builder.
 func (m *NotificationChannelMutation) Where(ps ...predicate.NotificationChannel) {
 	m.predicates = append(m.predicates, ps...)
@@ -2154,7 +2254,7 @@ func (m *NotificationChannelMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NotificationChannelMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.created_at != nil {
 		fields = append(fields, notificationchannel.FieldCreatedAt)
 	}
@@ -2178,6 +2278,12 @@ func (m *NotificationChannelMutation) Fields() []string {
 	}
 	if m.enabled != nil {
 		fields = append(fields, notificationchannel.FieldEnabled)
+	}
+	if m.last_used != nil {
+		fields = append(fields, notificationchannel.FieldLastUsed)
+	}
+	if m.last_used_success != nil {
+		fields = append(fields, notificationchannel.FieldLastUsedSuccess)
 	}
 	return fields
 }
@@ -2203,6 +2309,10 @@ func (m *NotificationChannelMutation) Field(name string) (ent.Value, bool) {
 		return m.WebhookConfig()
 	case notificationchannel.FieldEnabled:
 		return m.Enabled()
+	case notificationchannel.FieldLastUsed:
+		return m.LastUsed()
+	case notificationchannel.FieldLastUsedSuccess:
+		return m.LastUsedSuccess()
 	}
 	return nil, false
 }
@@ -2228,6 +2338,10 @@ func (m *NotificationChannelMutation) OldField(ctx context.Context, name string)
 		return m.OldWebhookConfig(ctx)
 	case notificationchannel.FieldEnabled:
 		return m.OldEnabled(ctx)
+	case notificationchannel.FieldLastUsed:
+		return m.OldLastUsed(ctx)
+	case notificationchannel.FieldLastUsedSuccess:
+		return m.OldLastUsedSuccess(ctx)
 	}
 	return nil, fmt.Errorf("unknown NotificationChannel field %s", name)
 }
@@ -2293,6 +2407,20 @@ func (m *NotificationChannelMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetEnabled(v)
 		return nil
+	case notificationchannel.FieldLastUsed:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUsed(v)
+		return nil
+	case notificationchannel.FieldLastUsedSuccess:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUsedSuccess(v)
+		return nil
 	}
 	return fmt.Errorf("unknown NotificationChannel field %s", name)
 }
@@ -2332,6 +2460,12 @@ func (m *NotificationChannelMutation) ClearedFields() []string {
 	if m.FieldCleared(notificationchannel.FieldWebhookConfig) {
 		fields = append(fields, notificationchannel.FieldWebhookConfig)
 	}
+	if m.FieldCleared(notificationchannel.FieldLastUsed) {
+		fields = append(fields, notificationchannel.FieldLastUsed)
+	}
+	if m.FieldCleared(notificationchannel.FieldLastUsedSuccess) {
+		fields = append(fields, notificationchannel.FieldLastUsedSuccess)
+	}
 	return fields
 }
 
@@ -2354,6 +2488,12 @@ func (m *NotificationChannelMutation) ClearField(name string) error {
 		return nil
 	case notificationchannel.FieldWebhookConfig:
 		m.ClearWebhookConfig()
+		return nil
+	case notificationchannel.FieldLastUsed:
+		m.ClearLastUsed()
+		return nil
+	case notificationchannel.FieldLastUsedSuccess:
+		m.ClearLastUsedSuccess()
 		return nil
 	}
 	return fmt.Errorf("unknown NotificationChannel nullable field %s", name)
@@ -2386,6 +2526,12 @@ func (m *NotificationChannelMutation) ResetField(name string) error {
 		return nil
 	case notificationchannel.FieldEnabled:
 		m.ResetEnabled()
+		return nil
+	case notificationchannel.FieldLastUsed:
+		m.ResetLastUsed()
+		return nil
+	case notificationchannel.FieldLastUsedSuccess:
+		m.ResetLastUsedSuccess()
 		return nil
 	}
 	return fmt.Errorf("unknown NotificationChannel field %s", name)

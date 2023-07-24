@@ -31,6 +31,8 @@ func (NotificationChannel) Fields() []ent.Field {
 		field.JSON("email_config", EmailConfig{}).Optional(),
 		field.JSON("webhook_config", WebhookConfig{}).Optional(),
 		field.Bool("enabled").Default(true),
+		field.Time("last_used").Optional().Nillable(),
+		field.Bool("last_used_success").Optional().Nillable(),
 	}
 }
 

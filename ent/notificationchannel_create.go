@@ -117,6 +117,34 @@ func (ncc *NotificationChannelCreate) SetNillableEnabled(b *bool) *NotificationC
 	return ncc
 }
 
+// SetLastUsed sets the "last_used" field.
+func (ncc *NotificationChannelCreate) SetLastUsed(t time.Time) *NotificationChannelCreate {
+	ncc.mutation.SetLastUsed(t)
+	return ncc
+}
+
+// SetNillableLastUsed sets the "last_used" field if the given value is not nil.
+func (ncc *NotificationChannelCreate) SetNillableLastUsed(t *time.Time) *NotificationChannelCreate {
+	if t != nil {
+		ncc.SetLastUsed(*t)
+	}
+	return ncc
+}
+
+// SetLastUsedSuccess sets the "last_used_success" field.
+func (ncc *NotificationChannelCreate) SetLastUsedSuccess(b bool) *NotificationChannelCreate {
+	ncc.mutation.SetLastUsedSuccess(b)
+	return ncc
+}
+
+// SetNillableLastUsedSuccess sets the "last_used_success" field if the given value is not nil.
+func (ncc *NotificationChannelCreate) SetNillableLastUsedSuccess(b *bool) *NotificationChannelCreate {
+	if b != nil {
+		ncc.SetLastUsedSuccess(*b)
+	}
+	return ncc
+}
+
 // Mutation returns the NotificationChannelMutation object of the builder.
 func (ncc *NotificationChannelCreate) Mutation() *NotificationChannelMutation {
 	return ncc.mutation
@@ -240,6 +268,14 @@ func (ncc *NotificationChannelCreate) createSpec() (*NotificationChannel, *sqlgr
 	if value, ok := ncc.mutation.Enabled(); ok {
 		_spec.SetField(notificationchannel.FieldEnabled, field.TypeBool, value)
 		_node.Enabled = value
+	}
+	if value, ok := ncc.mutation.LastUsed(); ok {
+		_spec.SetField(notificationchannel.FieldLastUsed, field.TypeTime, value)
+		_node.LastUsed = &value
+	}
+	if value, ok := ncc.mutation.LastUsedSuccess(); ok {
+		_spec.SetField(notificationchannel.FieldLastUsedSuccess, field.TypeBool, value)
+		_node.LastUsedSuccess = &value
 	}
 	return _node, _spec
 }

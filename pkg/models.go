@@ -109,13 +109,17 @@ func (s *ScriptStatsModel) FormatTimeLastRun() string {
 }
 
 type NotificationChannelModel struct {
-	ID            int                  `json:"id"`
-	CreatedAt     time.Time            `json:"created_at"`
-	UpdatedAt     time.Time            `json:"updated_at"`
-	Name          string               `json:"name"`
-	Type          string               `json:"type"`
-	SlackConfig   schema.SlackConfig   `json:"slack_config"`
-	EmailConfig   schema.EmailConfig   `json:"email_config"`
-	WebhookConfig schema.WebhookConfig `json:"webhook_config"`
-	Enabled       bool                 `json:"enabled"`
+	ID                 int                  `json:"id"`
+	CreatedAt          time.Time            `json:"created_at"`
+	UpdatedAt          time.Time            `json:"updated_at"`
+	Name               string               `json:"name"`
+	Type               string               `json:"type"`
+	SlackConfig        schema.SlackConfig   `json:"slack_config"`
+	EmailConfig        schema.EmailConfig   `json:"email_config"`
+	WebhookConfig      schema.WebhookConfig `json:"webhook_config"`
+	Enabled            bool                 `json:"enabled"`
+	LastSendSuccessful *bool                `json:"last_send_successful"`
+	LastSend           *time.Time           `json:"last_send"`
+	LastSendHuman      string               `json:"last_send_human"`
+	HasBeenUsed        bool                 `json:"has_been_used"`
 }

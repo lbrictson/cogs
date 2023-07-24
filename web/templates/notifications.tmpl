@@ -9,6 +9,11 @@
                         <a href="/notifications/{{ .ID }}" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
                                 <h5 class="mb-1">{{ .Name }}</h5>
+                                {{ if .HasBeenUsed }}
+                                <small>Last used: {{ .LastSendHuman }} ({{ if .LastSendSuccessful }}Successful{{ else }}Errored{{ end }})</small>
+                                {{ else }}
+                                <small>Never Used</small>
+                                {{ end }}
                             </div>
                             <p class="mb-1">{{ .Type }}</p>
                         </a>

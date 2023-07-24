@@ -79,6 +79,16 @@ func Enabled(v bool) predicate.NotificationChannel {
 	return predicate.NotificationChannel(sql.FieldEQ(FieldEnabled, v))
 }
 
+// LastUsed applies equality check predicate on the "last_used" field. It's identical to LastUsedEQ.
+func LastUsed(v time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldEQ(FieldLastUsed, v))
+}
+
+// LastUsedSuccess applies equality check predicate on the "last_used_success" field. It's identical to LastUsedSuccessEQ.
+func LastUsedSuccess(v bool) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldEQ(FieldLastUsedSuccess, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.NotificationChannel {
 	return predicate.NotificationChannel(sql.FieldEQ(FieldCreatedAt, v))
@@ -327,6 +337,76 @@ func EnabledEQ(v bool) predicate.NotificationChannel {
 // EnabledNEQ applies the NEQ predicate on the "enabled" field.
 func EnabledNEQ(v bool) predicate.NotificationChannel {
 	return predicate.NotificationChannel(sql.FieldNEQ(FieldEnabled, v))
+}
+
+// LastUsedEQ applies the EQ predicate on the "last_used" field.
+func LastUsedEQ(v time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldEQ(FieldLastUsed, v))
+}
+
+// LastUsedNEQ applies the NEQ predicate on the "last_used" field.
+func LastUsedNEQ(v time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldNEQ(FieldLastUsed, v))
+}
+
+// LastUsedIn applies the In predicate on the "last_used" field.
+func LastUsedIn(vs ...time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldIn(FieldLastUsed, vs...))
+}
+
+// LastUsedNotIn applies the NotIn predicate on the "last_used" field.
+func LastUsedNotIn(vs ...time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldNotIn(FieldLastUsed, vs...))
+}
+
+// LastUsedGT applies the GT predicate on the "last_used" field.
+func LastUsedGT(v time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldGT(FieldLastUsed, v))
+}
+
+// LastUsedGTE applies the GTE predicate on the "last_used" field.
+func LastUsedGTE(v time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldGTE(FieldLastUsed, v))
+}
+
+// LastUsedLT applies the LT predicate on the "last_used" field.
+func LastUsedLT(v time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldLT(FieldLastUsed, v))
+}
+
+// LastUsedLTE applies the LTE predicate on the "last_used" field.
+func LastUsedLTE(v time.Time) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldLTE(FieldLastUsed, v))
+}
+
+// LastUsedIsNil applies the IsNil predicate on the "last_used" field.
+func LastUsedIsNil() predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldIsNull(FieldLastUsed))
+}
+
+// LastUsedNotNil applies the NotNil predicate on the "last_used" field.
+func LastUsedNotNil() predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldNotNull(FieldLastUsed))
+}
+
+// LastUsedSuccessEQ applies the EQ predicate on the "last_used_success" field.
+func LastUsedSuccessEQ(v bool) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldEQ(FieldLastUsedSuccess, v))
+}
+
+// LastUsedSuccessNEQ applies the NEQ predicate on the "last_used_success" field.
+func LastUsedSuccessNEQ(v bool) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldNEQ(FieldLastUsedSuccess, v))
+}
+
+// LastUsedSuccessIsNil applies the IsNil predicate on the "last_used_success" field.
+func LastUsedSuccessIsNil() predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldIsNull(FieldLastUsedSuccess))
+}
+
+// LastUsedSuccessNotNil applies the NotNil predicate on the "last_used_success" field.
+func LastUsedSuccessNotNil() predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldNotNull(FieldLastUsedSuccess))
 }
 
 // And groups predicates with the AND operator between them.

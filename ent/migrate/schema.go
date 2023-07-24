@@ -56,6 +56,8 @@ var (
 		{Name: "email_config", Type: field.TypeJSON, Nullable: true},
 		{Name: "webhook_config", Type: field.TypeJSON, Nullable: true},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "last_used", Type: field.TypeTime, Nullable: true},
+		{Name: "last_used_success", Type: field.TypeBool, Nullable: true},
 	}
 	// NotificationChannelsTable holds the schema information for the "notification_channels" table.
 	NotificationChannelsTable = &schema.Table{

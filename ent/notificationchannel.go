@@ -34,8 +34,12 @@ type NotificationChannel struct {
 	// WebhookConfig holds the value of the "webhook_config" field.
 	WebhookConfig schema.WebhookConfig `json:"webhook_config,omitempty"`
 	// Enabled holds the value of the "enabled" field.
-	Enabled      bool `json:"enabled,omitempty"`
-	selectValues sql.SelectValues
+	Enabled bool `json:"enabled,omitempty"`
+	// LastUsed holds the value of the "last_used" field.
+	LastUsed *time.Time `json:"last_used,omitempty"`
+	// LastUsedSuccess holds the value of the "last_used_success" field.
+	LastUsedSuccess *bool `json:"last_used_success,omitempty"`
+	selectValues    sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -45,13 +49,13 @@ func (*NotificationChannel) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case notificationchannel.FieldSlackConfig, notificationchannel.FieldEmailConfig, notificationchannel.FieldWebhookConfig:
 			values[i] = new([]byte)
-		case notificationchannel.FieldEnabled:
+		case notificationchannel.FieldEnabled, notificationchannel.FieldLastUsedSuccess:
 			values[i] = new(sql.NullBool)
 		case notificationchannel.FieldID:
 			values[i] = new(sql.NullInt64)
 		case notificationchannel.FieldName, notificationchannel.FieldType:
 			values[i] = new(sql.NullString)
-		case notificationchannel.FieldCreatedAt, notificationchannel.FieldUpdatedAt:
+		case notificationchannel.FieldCreatedAt, notificationchannel.FieldUpdatedAt, notificationchannel.FieldLastUsed:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -128,6 +132,20 @@ func (nc *NotificationChannel) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				nc.Enabled = value.Bool
 			}
+		case notificationchannel.FieldLastUsed:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_used", values[i])
+			} else if value.Valid {
+				nc.LastUsed = new(time.Time)
+				*nc.LastUsed = value.Time
+			}
+		case notificationchannel.FieldLastUsedSuccess:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field last_used_success", values[i])
+			} else if value.Valid {
+				nc.LastUsedSuccess = new(bool)
+				*nc.LastUsedSuccess = value.Bool
+			}
 		default:
 			nc.selectValues.Set(columns[i], values[i])
 		}
@@ -187,6 +205,16 @@ func (nc *NotificationChannel) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", nc.Enabled))
+	builder.WriteString(", ")
+	if v := nc.LastUsed; v != nil {
+		builder.WriteString("last_used=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := nc.LastUsedSuccess; v != nil {
+		builder.WriteString("last_used_success=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }
