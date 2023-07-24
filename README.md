@@ -144,6 +144,12 @@ echo $COGS_NAME
 echo $COGS_GREETING
 ```
 
+## Backups and Restoration
+
+Cogs data is stored in a sqlite3 database and can be backed up by simply creating a copy of that file and storing it in a different location.  The file is `data.db` and can be found at the location of `-data` or `COGS_DATA`
+
+Restoring a backup is as simple as stopping the service and then replacing the `data.db` file with the backup file.
+
 ## REST API
 
 TODO
