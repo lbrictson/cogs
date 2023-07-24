@@ -57,7 +57,7 @@ func formCreateUser(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 				"Message": reason,
 			})
 		}
-		_, err := createUser(ctx, db, CreateUserInput{
+		createdUser, err := createUser(ctx, db, CreateUserInput{
 			Email:    data.Email,
 			Password: data.Password,
 			Role:     data.Role,
@@ -67,6 +67,7 @@ func formCreateUser(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 			LogFromCtx(ctx).Error(err.Error())
 			return err
 		}
+		addAPIKeyToCache(createdUser.APIKey, createdUser)
 		LogFromCtx(ctx).Info("created user", "email", data.Email, "user", userFromEchoContext(c))
 		return c.Redirect(http.StatusFound, "/users")
 	}
@@ -103,11 +104,13 @@ func formEditUser(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 		if data.Role != "" {
 			input.Role = &data.Role
 		}
-		_, err = updateUser(ctx, db, i, input)
+		updatedUser, err := updateUser(ctx, db, i, input)
 		if err != nil {
 			LogFromCtx(ctx).Error(err.Error())
 			return err
 		}
+		// Update the API cache because the user data has changed and their permissions may have been modified
+		addAPIKeyToCache(updatedUser.APIKey, updatedUser)
 		LogFromCtx(ctx).Info("edited user", "name", data.Email, "user", userFromEchoContext(c))
 		return c.Redirect(http.StatusFound, "/users")
 	}
@@ -744,5 +747,20 @@ func formUpdateNotificationChannel(ctx context.Context, db *ent.Client) echo.Han
 		}
 		LogFromCtx(ctx).Info("updated notification channel", "name", notificationChannel.Name, "user", userFromEchoContext(c))
 		return c.Redirect(http.StatusFound, "/notifications")
+	})
+}
+
+func formRegenerateAPIKey(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return echo.HandlerFunc(func(c echo.Context) error {
+		u, err := getUserByEmail(ctx, db, c.Get("email").(string))
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		regenerateUsersAPIKey(ctx, db, u.ID)
+		LogFromCtx(ctx).Info("regenerated api key", "user", userFromEchoContext(c))
+		return c.Redirect(http.StatusFound, "/api_key")
 	})
 }

@@ -138,3 +138,22 @@ func (s *Server) projectAdminRequired(next echo.HandlerFunc) echo.HandlerFunc {
 		return c.Render(http.StatusForbidden, "unauthorized", nil)
 	}
 }
+
+func (s *Server) apiKeyAdminRequired(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		apiKey := c.Request().Header.Get("X-API-Key")
+		if apiKey == "" {
+			return c.JSON(http.StatusForbidden, map[string]string{"error": "unauthorized"})
+		}
+		valid, user := validateAPIKey(apiKey)
+		if !valid {
+			return c.JSON(http.StatusForbidden, map[string]string{"error": "unauthorized"})
+		}
+		if user.Role != "admin" {
+			return c.JSON(http.StatusForbidden, map[string]string{"error": "unauthorized"})
+		}
+		c.Set("email", user.Email)
+		c.Set("role", user.Role)
+		return next(c)
+	}
+}

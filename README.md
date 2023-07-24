@@ -11,7 +11,7 @@ A simple server for executing adhoc scripts or running scripts on a schedule all
 - [x] Secret management
 - [x] Permissions per project
 - [x] Web UI
-- [ ] REST API
+- [x] REST API (Basic)
 
 ## Quick Start (non docker)
 
@@ -33,6 +33,12 @@ Password: ChangeMe1234!
 ## Docker Quick Start
 
 TODO
+
+## Best Practices
+
+- **Change the default admin password**
+- **Do not run cogs as root as script execution can leak into your environment**
+- **Do not run cogs on a public network as it does not have MFA for the web UI**
 
 ## Configuration
 
@@ -152,7 +158,21 @@ Restoring a backup is as simple as stopping the service and then replacing the `
 
 ## REST API
 
-TODO
+The REST API is available at `/api/v1/` and requires an administrator API token to interact with.
+
+### Authentication
+
+All requests to the API must have the header `x-api-key` set to a valid API token with administrator privileges.
+
+Available endpoints are
+
+- `GET /api/v1/projects` | Lists all projects
+- `GET /api/v1/projects/{project_id}` | Lists all scripts within the specified project
+- `GET /api/v1/scripts/{script_id}` | Gets the specified script
+- `PUT /api/v1/scripts/{script_id}` | Updates the specified script
+- `POST /api/v1/run/{script_id}` | Runs the specified script
+- `GET /api/v1/history/{script_id}` | Lists execution history for the specified script
+- `GET /api/v1/history/{script_id}/{history_id}` | Gets the specified execution history
 
 ## Development
 

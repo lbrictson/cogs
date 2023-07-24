@@ -22,7 +22,7 @@ type RunScriptInput struct {
 	FailureChannel *NotificationChannelModel
 }
 
-func runScript(ctx context.Context, db *ent.Client, input RunScriptInput) string {
+func runScript(ctx context.Context, db *ent.Client, input RunScriptInput) int {
 	uu := uuid.New().String()
 	i := CreateHistoryInput{
 		ScriptID:        input.Script.ID,
@@ -39,10 +39,10 @@ func runScript(ctx context.Context, db *ent.Client, input RunScriptInput) string
 	history, err := createHistory(ctx, db, i)
 	if err != nil {
 		LogFromCtx(ctx).Error(err.Error())
-		return ""
+		return 0
 	}
 	go doScriptRun(ctx, db, input, uu, history.ID)
-	return uu
+	return history.ID
 }
 
 func doScriptRun(ctx context.Context, db *ent.Client, input RunScriptInput, runID string, historyID int) {

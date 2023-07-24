@@ -652,3 +652,19 @@ func renderFailedLoginPage(ctx context.Context) echo.HandlerFunc {
 		return c.Render(http.StatusOK, "failed_login", nil)
 	}
 }
+
+func renderAPIKeyPage(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		u, err := getUserByEmail(ctx, db, c.Get("email").(string))
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
+		return c.Render(http.StatusOK, "api_key",
+			map[string]interface{}{
+				"APIKey": u.APIKey,
+			})
+	}
+}

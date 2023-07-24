@@ -29,3 +29,6 @@ main
 # Ignore test data
 tmp/*
 tmp
+
+# Ignore local secrets
+.env

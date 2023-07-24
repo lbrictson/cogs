@@ -60,11 +60,21 @@ func hookDeleteUser(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 				"Message": err.Error(),
 			})
 		}
+		userToDelete, err := getUserByID(ctx, db, i)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
+		}
 		err = deleteUser(ctx, db, i)
 		if err != nil {
 			LogFromCtx(ctx).Error(err.Error())
-			return c.HTML(http.StatusInternalServerError, err.Error())
+			return c.Render(http.StatusInternalServerError, "generic_error", map[string]interface{}{
+				"Message": err.Error(),
+			})
 		}
+		removeAPIKeyFromCache(userToDelete.APIKey)
 		LogFromCtx(ctx).Info("Deleted user", "id", i)
 		return c.HTML(http.StatusOK, "<h1>Deleted</h1>")
 	}

@@ -33,6 +33,11 @@
                 {{ end }}
             </ul>
             <ul class="navbar-nav mb-2 mb-md-0 ms-auto">
+                {{ if eq .Role "admin" }}
+                <li class="nav-item">
+                    <a class="nav-link" href="/api_key">API Key</a>
+                </li>
+                {{ end }}
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Logout</a>
                 </li>

@@ -87,6 +87,10 @@ func NewServer(input NewServerInput) *Server {
 func (s *Server) Run(ctx context.Context) {
 	go runErroredJobCleaner(ctx, s.db)
 	go runHistoryRetention(ctx, s.db, s.retentionDays)
+	err := seedAPIKeyCache(ctx, s.db)
+	if err != nil {
+		panic(err)
+	}
 	e := echo.New()
 	e.Renderer = mustNewRenderer(s.brand)
 	e.HideBanner = true
@@ -137,11 +141,23 @@ func (s *Server) Run(ctx context.Context) {
 	loginRequiredRoutes.GET("/users/:id", renderEditUsersPage(ctx, s.db), s.globalAdminRequired)
 	loginRequiredRoutes.POST("/users/:id", formEditUser(ctx, s.db), s.globalAdminRequired)
 	loginRequiredRoutes.DELETE("/users/:id", hookDeleteUser(ctx, s.db), s.globalAdminRequired)
+	// API key routes
+	loginRequiredRoutes.GET("/api_key", renderAPIKeyPage(ctx, s.db), s.globalAdminRequired)
+	loginRequiredRoutes.POST("/api_key", formRegenerateAPIKey(ctx, s.db), s.globalAdminRequired)
 	// Login routes
 	e.GET("/login", renderLoginPage(ctx))
 	e.POST("/login", formLogin(ctx, s.db, s.sessionStore, s.sessionManager))
 	e.GET("/failed_login", renderFailedLoginPage(ctx))
 	e.GET("/logout", logoutHook(ctx, s.sessionStore, s.sessionManager))
+	// API v1
+	apiV1Routes := e.Group("/api/v1", s.apiKeyAdminRequired)
+	apiV1Routes.GET("/project", apiV1GetProjects(ctx, s.db))
+	apiV1Routes.GET("/project/:projectID", apiV1GetScripts(ctx, s.db))
+	apiV1Routes.GET("/script/:scriptID", apiV1GetProjectScript(ctx, s.db))
+	apiV1Routes.PUT("/script/:scriptID", apiV1UpdateScript(ctx, s.db))
+	apiV1Routes.POST("/run/:scriptID", apiV1RunScript(ctx, s.db))
+	apiV1Routes.GET("/history/:scriptID", apiV1GetScriptHistories(ctx, s.db))
+	apiV1Routes.GET("/history/:scriptID/:historyID", apiV1GetScriptHistory(ctx, s.db))
 	startScheduledJobs(ctx, s.db)
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%v", s.port)))
 }

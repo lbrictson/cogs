@@ -86,6 +86,7 @@ func getUsers(ctx context.Context, db *ent.Client) ([]UserModel, error) {
 type UpdateUserInput struct {
 	Password *string
 	Role     *string
+	APIKey   *string
 }
 
 func updateUser(ctx context.Context, db *ent.Client, id int, input UpdateUserInput) (UserModel, error) {
@@ -95,6 +96,9 @@ func updateUser(ctx context.Context, db *ent.Client, id int, input UpdateUserInp
 	}
 	if input.Role != nil {
 		builder.SetRole(user.Role(*input.Role))
+	}
+	if input.APIKey != nil {
+		builder.SetAPIKey(*input.APIKey)
 	}
 	_, err := builder.Where(user.IDEQ(id)).Save(ctx)
 	if err != nil {
