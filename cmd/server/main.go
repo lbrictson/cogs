@@ -29,6 +29,14 @@ func main() {
 			Level: level,
 		}))
 	}
+	// Validate the scripts folder exists
+	if _, err := os.Stat(c.DataDirectory + "/scripts"); os.IsNotExist(err) {
+		// Create the directory
+		err := os.MkdirAll(c.DataDirectory+"/scripts", 0755)
+		if err != nil {
+			panic(err)
+		}
+	}
 	ctx := pkg.LogIntoCtx(context.Background(), logger)
 	seedErr := pkg.ExecuteDefaultSeeds(ctx, c.DBConnection)
 	if seedErr != nil {
