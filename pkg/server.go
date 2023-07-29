@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
@@ -127,6 +126,8 @@ func (s *Server) Run(ctx context.Context) {
 	loginRequiredRoutes.GET("/projects/:projectID/secrets/edit/:secretID", renderViewUpdateSecretPage(ctx, s.db), s.projectAdminRequired)
 	loginRequiredRoutes.POST("/projects/:projectID/secrets/edit/:secretID", formUpdateSecret(ctx, s.db), s.projectAdminRequired)
 	loginRequiredRoutes.DELETE("/projects/:projectID/secrets/delete/:secretID", hookDeleteSecret(ctx, s.db), s.projectAdminRequired)
+	// Hooks for HTMX
+	loginRequiredRoutes.GET("/projects/:projectID/:script_id/history/:historyID/htmx", hookRefreshScriptHistoryFrontendContent(ctx, s.db), s.projectAccessRequired)
 	// Notification routes
 	loginRequiredRoutes.GET("/notifications", renderNotificationsPage(ctx, s.db), s.globalAdminRequired)
 	loginRequiredRoutes.GET("/notifications/create/:type", renderCreateNotificationPage(ctx), s.globalAdminRequired)
@@ -181,8 +182,12 @@ func (t *Renderer) Render(w io.Writer, name string, data any, c echo.Context) er
 		if ok {
 			templateData = casted
 		} else {
-			LogFromCtx(c.Request().Context()).Error("Failed to cast template data")
-			return errors.New("failed to cast template data")
+			renderErr := t.templates.ExecuteTemplate(w, name, data)
+			if renderErr != nil {
+				LogFromCtx(c.Request().Context()).Error(renderErr.Error())
+				return renderErr
+			}
+			return nil
 		}
 	}
 	templateData["Role"] = c.Get("role")

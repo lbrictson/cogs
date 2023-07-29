@@ -40,6 +40,13 @@ type ScriptModel struct {
 	ScheduleCron          string `json:"schedule_cron"`
 }
 
+type FrontendScriptHistoryModel struct {
+	HistoryModel
+	ScriptName string
+	ProjectID  int
+	ScriptID   int
+}
+
 type AccessModel struct {
 	ID        int       `json:"id"`
 	CreatedAt time.Time `json:"created_at"`

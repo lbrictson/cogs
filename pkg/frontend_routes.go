@@ -510,10 +510,19 @@ func renderHistoryPage(ctx context.Context, db *ent.Client) echo.HandlerFunc {
 				"Message": err.Error(),
 			})
 		}
+		feModels := []FrontendScriptHistoryModel{}
+		for _, h := range history {
+			feModels = append(feModels, FrontendScriptHistoryModel{
+				ScriptID:     h.ScriptID,
+				ProjectID:    project.ID,
+				ScriptName:   script.Name,
+				HistoryModel: h,
+			})
+		}
 		return c.Render(http.StatusOK, "script_history", map[string]interface{}{
 			"Script":       script,
 			"Project":      project,
-			"History":      history,
+			"History":      feModels,
 			"Page":         pageNumber,
 			"More":         more,
 			"NextPage":     pageNumber + 1,
