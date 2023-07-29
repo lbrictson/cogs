@@ -160,25 +160,7 @@
                         {{ $projectID := .Project.ID }}
                         {{ $scriptID := .Script.ID }}
                         {{ range .History }}
-                            <tr {{ if eq .Success false }}{{ if eq .Status "finished" }}class="table-danger"{{ else }}class="table-primary"{{ end }}{{ end }}>
-                                <th scope="row">
-                                    {{ if eq .Success true }}
-                                       Success
-                                    {{ else }}
-                                        {{ if eq .Status "finished" }}
-                                            Error
-                                        {{ else }}
-                                            Running
-                                        {{ end }}
-                                    {{ end }}
-                                </th>
-                                <td>{{ .FormatTime }} ({{ .HumanizeCreatedAt }})</td>
-                                <td>{{ .Trigger }} by {{ .TriggeredBy }}</td>
-                                <td>{{ if ne .Status "finished" }}<div class="spinner-border text-dark" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>{{ else }}{{ .Duration }}{{ end }}</td>
-                                <td>{{ if eq .Status "finished" }}<a href="/projects/{{ $projectID }}/{{ $scriptID }}/history/{{ .ID }}" class="btn btn-dark">Details</a>{{end}}</td>
-                            </tr>
+                            {{ template "table_cell_script_history" . }}
                         {{ end }}
                         </tbody>
                     </table>
@@ -211,6 +193,28 @@
             </div>
         </div>
     {{ template "footer" . }}
+{{ end }}
+
+{{ define "table_cell_script_history" }}
+    <tr {{ if eq .Success false }}{{ if eq .Status "finished" }}class="table-danger" {{ else }}class="table-primary" {{ end }}{{ end }}{{ if ne .Status "finished" }} hx-swap="outerHTML" hx-get="/projects/{{ .ProjectID }}/{{ .ScriptID }}/history/{{ .ID }}/htmx" hx-trigger="every 2s"{{ end }}>
+        <th scope="row">
+            {{ if eq .Success true }}
+                Success
+            {{ else }}
+                {{ if eq .Status "finished" }}
+                    Error
+                {{ else }}
+                    Running
+                {{ end }}
+            {{ end }}
+        </th>
+        <td>{{ .FormatTime }} ({{ .HumanizeCreatedAt }})</td>
+        <td>{{ .Trigger }} by {{ .TriggeredBy }}</td>
+        <td>{{ if ne .Status "finished" }}<div class="spinner-border text-dark" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>{{ else }}{{ .Duration }}{{ end }}</td>
+        <td>{{ if eq .Status "finished" }}<a href="/projects/{{ .ProjectID }}/{{ .ScriptID }}/history/{{ .ID }}" class="btn btn-dark">Details</a>{{end}}</td>
+    </tr>
 {{ end }}
 
 {{ define "run_history" }}

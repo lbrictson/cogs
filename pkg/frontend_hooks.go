@@ -203,3 +203,38 @@ func logoutHook(ctx context.Context, cookieStore *sessions.CookieStore, sessionM
 		return c.Redirect(http.StatusFound, "/")
 	}
 }
+
+func hookRefreshScriptHistoryFrontendContent(ctx context.Context, db *ent.Client) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		projectID := c.Param("projectID")
+		scriptID := c.Param("script_id")
+		historyID := c.Param("historyID")
+		// convert to int
+		projectIDInt, err := strconv.Atoi(projectID)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.HTML(http.StatusInternalServerError, err.Error())
+		}
+		scriptIDInt, err := strconv.Atoi(scriptID)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.HTML(http.StatusInternalServerError, err.Error())
+		}
+		historyIDInt, err := strconv.Atoi(historyID)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.HTML(http.StatusInternalServerError, err.Error())
+		}
+		hist, err := getHistoryByID(ctx, db, historyIDInt)
+		if err != nil {
+			LogFromCtx(ctx).Error(err.Error())
+			return c.HTML(http.StatusInternalServerError, err.Error())
+		}
+		feModel := FrontendScriptHistoryModel{
+			ProjectID:    projectIDInt,
+			ScriptID:     scriptIDInt,
+			HistoryModel: hist,
+		}
+		return c.Render(http.StatusOK, "table_cell_script_history", feModel)
+	}
+}
