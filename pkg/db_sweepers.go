@@ -25,7 +25,7 @@ func runErroredJobCleaner(ctx context.Context, db *ent.Client) {
 			continue
 		}
 		for _, history := range nonFinishedHistories {
-			if history.CreatedAt.Before(time.Now().Add(-1 * time.Hour)) {
+			if history.CreatedAt.Before(time.Now().Add(-24 * time.Hour)) {
 				LogFromCtx(ctx).Info("Marking job as errored: " + history.RunID)
 				dur := int(time.Now().Sub(history.CreatedAt).Seconds())
 				i := UpdateHistoryInput{
